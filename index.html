@@ -161,6 +161,10 @@ header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:var(--col
 .note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px;max-height:22em;overflow:hidden}
 .note time{font-size:12px;color:var(--muted)}
 .note.placeholder{opacity:.28;box-shadow:none;border-style:dashed}
+.card.placeholder{opacity:.3;box-shadow:none;border-style:dashed}
+.card.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;box-shadow:var(--lift);margin:0}
+.card.press{transform:scale(.98);transition:transform .3s}
+#sec-cards .card[data-iid]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .note.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;box-shadow:var(--lift);cursor:grabbing;margin:0}
 .note.press{transform:scale(.98);transition:transform .3s}
 body.dragging,body.dragging *{cursor:grabbing!important}
@@ -659,7 +663,7 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
 
   <main id="view-section" class="view" hidden>
     <a class="back" href="#" id="sec-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
-    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><button class="icon-btn" id="sec-edit" type="button" aria-label="Redigera sidan" title="Redigera sidan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button></div>
+    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><p class="tip" id="sec-tip" style="margin-left:auto"></p><button class="icon-btn" id="sec-edit" type="button" aria-label="Redigera sidan" title="Redigera sidan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button></div>
     <div id="sec-editbar" class="medit" hidden></div>
     <div class="cards" id="sec-cards"></div>
     <div id="sec-form"></div>
@@ -1266,7 +1270,7 @@ function renderSide(){
 (function(){
   let mode=null,sx=0,sy=0,st=0,dx=0,w=0;
   const side=$("side"),scrim=$("menu-scrim");
-  const blocked=()=>deskMQ.matches||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
+  const blocked=()=>deskMQ.matches||!!(cdrag&&cdrag.active)||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
   function reset(){side.style.transition="";side.style.transform="";side.style.visibility="";scrim.style.opacity="";scrim.style.transition=""}
   document.addEventListener("touchstart",e=>{
     mode=null;
@@ -1788,6 +1792,71 @@ function dashNodes(){
   return kids;
 }
 
+
+// ---------- Flytta kort på sektionssidorna (mus: dra, touch: håll in) ----------
+let cdrag=null,cardClickBlock=0;
+function cardPress(e,c,sid){
+  if(e.button!==0||cdrag||tagFilter||secAdd)return;
+  if(e.target.closest(".acts a,.acts button,.xs,input,textarea"))return;
+  cdrag={c,sid,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType!=="mouse",active:false};
+  if(cdrag.touch){c.classList.add("press");cdrag.timer=setTimeout(()=>{if(cdrag&&!cdrag.active)startCardDrag()},380)}
+}
+function startCardDrag(){
+  const d=cdrag,r=d.c.getBoundingClientRect();
+  d.active=true;d.c.classList.remove("press");
+  d.ox=d.x-r.left;d.oy=d.y-r.top;
+  d.before=[...$("sec-cards").querySelectorAll(".card[data-iid]")].map(x=>x.dataset.iid).join();
+  const g=d.c.cloneNode(true);g.classList.add("ghost");g.classList.remove("press");g.style.width=r.width+"px";g.style.height=r.height+"px";
+  document.body.append(g);d.ghost=g;
+  d.c.classList.add("placeholder");document.body.classList.add("dragging");
+  try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}
+  moveCardGhost();
+}
+function moveCardGhost(){const d=cdrag;d.ghost.style.transform="translate("+(d.x-d.ox)+"px,"+(d.y-d.oy)+"px) rotate(1.2deg)"}
+function cardDragMove(){
+  const d=cdrag;moveCardGhost();
+  const under=document.elementFromPoint(d.x,d.y);
+  const t=under&&under.closest("#sec-cards .card[data-iid]");
+  if(t&&t!==d.c){
+    const box=$("sec-cards"),cards=[...box.querySelectorAll(".card[data-iid]")];
+    const from=cards.indexOf(d.c),to=cards.indexOf(t);
+    if(from<to)t.after(d.c);else t.before(d.c);
+  }
+  const edge=70;
+  if(d.y<edge)window.scrollBy(0,-Math.ceil((edge-d.y)/5));
+  else if(d.y>innerHeight-edge)window.scrollBy(0,Math.ceil((d.y-(innerHeight-edge))/5));
+}
+function cancelCardPress(){if(!cdrag)return;clearTimeout(cdrag.timer);cdrag.c.classList.remove("press");cdrag=null}
+function endCardDrag(){
+  const d=cdrag;if(!d)return;
+  if(!d.active){cancelCardPress();return}
+  cdrag=null;d.ghost.remove();d.c.classList.remove("placeholder");document.body.classList.remove("dragging");
+  cardClickBlock=Date.now()+350;
+  const order=[...$("sec-cards").querySelectorAll(".card[data-iid]")].map(x=>x.dataset.iid);
+  const sec=getSection(d.sid);
+  if(sec&&order.join()!==d.before){
+    const byId=new Map((sec.items||[]).map(x=>[x.id,x]));
+    const items=order.map(id=>byId.get(id)).filter(Boolean);
+    (sec.items||[]).forEach(x=>{if(!order.includes(x.id))items.push(x)});
+    saveSection(d.sid,{...sec,items});
+  }
+  pageDirty=false;renderPage(true);
+}
+document.addEventListener("pointermove",e=>{
+  const d=cdrag;if(!d||e.pointerId!==d.pid)return;
+  d.x=e.clientX;d.y=e.clientY;
+  if(!d.active){
+    const dist=Math.hypot(d.x-d.sx,d.y-d.sy);
+    if(d.touch){if(dist>10)cancelCardPress()}else if(dist>6)startCardDrag();
+    return;
+  }
+  cardDragMove();
+});
+document.addEventListener("pointerup",e=>{if(cdrag&&e.pointerId===cdrag.pid)endCardDrag()});
+document.addEventListener("pointercancel",e=>{if(cdrag&&e.pointerId===cdrag.pid){cdrag.active?endCardDrag():cancelCardPress()}});
+document.addEventListener("touchmove",e=>{if(cdrag&&cdrag.active)e.preventDefault()},{passive:false});
+window.addEventListener("blur",()=>{if(cdrag)cdrag.active?endCardDrag():cancelCardPress()});
+
 // --- Sektionssidan ---
 function siteFor(r){
   if(r.has_pages)return r.name.toLowerCase()===(GH.owner+".github.io").toLowerCase()?"https://"+GH.owner+".github.io/":"https://"+GH.owner+".github.io/"+r.name+"/";
@@ -1809,13 +1878,15 @@ const openCards=new Set();
 function card(sid,sec,it){
   const link=linkOf(it),open=openCards.has(it.id);
   const isProj=!!(projSection()&&projSection()[0]===sid);
-  const toggle=()=>{if(isProj){go("proj-"+it.id);return}if(openCards.has(it.id))openCards.delete(it.id);else{if(!c.classList.contains("has-desc"))return;openCards.add(it.id)}renderPage(true)};
+  const toggle=()=>{if(Date.now()<cardClickBlock)return;if(isProj){go("proj-"+it.id);return}if(openCards.has(it.id))openCards.delete(it.id);else{if(!c.classList.contains("has-desc"))return;openCards.add(it.id)}renderPage(true)};
   const imgs=it.images||[],more=!!(it.desc||imgs.length);
   const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(more?(open?", fäll ihop":", visa mer"):"")},monoFor(it.name),
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(link))));
   if(more&&!isProj)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   head.addEventListener("click",e=>{e.stopPropagation();toggle()});
-  const c=el("article",{class:"card"+(open&&!isProj?" open":"")+(more||isProj?" has-desc":"")+(isProj?" is-proj":"")},head);
+  const c=el("article",{class:"card"+(open&&!isProj?" open":"")+(more||isProj?" has-desc":"")+(isProj?" is-proj":""),"data-iid":it.id},head);
+  c.addEventListener("pointerdown",e=>cardPress(e,c,sid));
+  c.addEventListener("contextmenu",e=>{if(cdrag)e.preventDefault()});
   c.addEventListener("click",e=>{if(e.target.closest("a,button"))return;toggle()});
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
   if(open&&imgs.length)c.append(gallery(imgs));
@@ -1954,7 +2025,9 @@ function renderPage(force){
   document.title=onSec?(sec.title||"Sida")+" – [tomasandersson]":"[tomasandersson]";
   if(!onSec)return;
   const view=$("view-section"),a=document.activeElement;
+  if(cdrag){pageDirty=true;return}
   if(!force&&view.contains(a)&&a.tagName==="INPUT"){pageDirty=true;return}
+  $("sec-tip").textContent=(sec.items||[]).length>1&&!tagFilter?(touchUI()?"Håll in ett kort för att flytta":"Dra korten för att flytta"):"";
   pageDirty=false;
   const sid=route,list=sec.items||[];
   $("sec-title").textContent=sec.title||"Namnlös";
