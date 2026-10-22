@@ -343,6 +343,16 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lb-count{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
 
 /* Taggar */
+.dtags{display:flex;flex-direction:column;gap:4px}
+.dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
+button.dtg{cursor:pointer}
+button.dtg:hover{background:var(--bg)}
+.dtg.on{background:var(--sel)}
+.dtg-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+.dtg-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtg-n{font-size:12.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.dtg-bar{display:block;height:6px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden}
+.dtg-bar i{display:block;height:100%;border-radius:999px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .card .acts{flex-wrap:wrap}
 .tag{border:0;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font:inherit;font-size:12.5px;font-weight:600;padding:4px 9px;border-radius:999px;cursor:pointer;position:relative;z-index:1;line-height:1.3}
@@ -487,7 +497,7 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
 .dlegend i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .dlegend span{flex:1}
 .dlegend b{font-weight:600;font-variant-numeric:tabular-nums}
-.d-events{grid-column:1/-1}
+.d-events{grid-column:span 2}
 .devents{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .devents li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:14px;padding:9px 0;border-top:1px solid var(--line)}
 .devents li:first-child{border-top:0}
@@ -497,11 +507,11 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
 .dem a:hover{text-decoration:underline}
 .devents time{font-size:13px;color:var(--muted);white-space:nowrap}
 .devents code{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
-@media (max-width:1100px){.dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.d-events{grid-column:1/-1}}
+@media (max-width:1100px){.dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.d-events,.d-tags{grid-column:1/-1}}
 @media (max-width:700px){
   .dtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dgrid{grid-template-columns:minmax(0,1fr)}
-  .d-streak,.d-events{grid-column:auto}
+  .d-streak,.d-events,.d-tags{grid-column:auto}
   .dstreak{flex-wrap:wrap;gap:14px}
   .dflame{width:72px;height:72px}.dflame b{font-size:26px}
   .dgo{display:none}
@@ -1679,9 +1689,12 @@ function donut(parts){
   w.append(el("div",{class:"dc"},el("b",{},pct+"%"),el("span",{},top.n)));
   return w;
 }
+function hasTag(it,t){return (it.tags||[]).some(x=>x.toLowerCase()===t.toLowerCase())}
 function dashNodes(){
-  const ps=dashProjects();
-  if(!dash.loading&&(!dash.data||dash.key!==ps.map(x=>x.repo||"").join(",")||Date.now()-dash.t>15*60*1000))setTimeout(()=>loadDash(),0);
+  const psAll=dashProjects();
+  if(!dash.loading&&(!dash.data||dash.key!==psAll.map(x=>x.repo||"").join(",")||Date.now()-dash.t>15*60*1000))setTimeout(()=>loadDash(),0);
+  // Är en tagg vald visar statistiken bara de projekten
+  const ps=tagFilter?psAll.filter(x=>hasTag(x.it,tagFilter)):psAll;
   const D=dash.data||{};
   const now=new Date(),wd=(now.getDay()+6)%7; // måndag=0
   const monday=new Date(now.getFullYear(),now.getMonth(),now.getDate()-wd);
@@ -1695,15 +1708,16 @@ function dashNodes(){
   const weekPer=ps.map(x=>{const st=x.repo&&D[x.repo];return st?st.commits.filter(c=>new Date(c.date)>=monday).length:0});
   const bestI=weekPer.indexOf(Math.max(...weekPer));
   let openTodos=0,doneTodos=0;ps.forEach(x=>(x.it.todos||[]).forEach(L=>L.items.forEach(t=>t.done?doneTodos++:openTodos++)));
-  const langs={};Object.values(D).forEach(st=>Object.entries(st.langs||{}).forEach(([k,v])=>langs[k]=(langs[k]||0)+v));
+  const PD=ps.map(x=>x.repo&&D[x.repo]).filter(Boolean);
+  const langs={};PD.forEach(st=>Object.entries(st.langs||{}).forEach(([k,v])=>langs[k]=(langs[k]||0)+v));
   const langParts=Object.entries(langs).sort((a,b)=>b[1]-a[1]).map(([n,v],i)=>({n,v,c:langColor(n,i)}));
-  const newest=Object.values(D).map(st=>st.pushed).filter(Boolean).sort().pop();
+  const newest=PD.map(st=>st.pushed).filter(Boolean).sort().pop();
   const waiting=dash.loading&&!dash.data;
 
   const kids=[];
   const refresh=html("button",{class:"ibtn big",type:"button",title:"Hämta ny statistik","aria-label":"Hämta ny statistik",onclick:()=>loadDash(true)},'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'+(dash.loading?' class="spin"':'')+'><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>');
   if(!ps.length)return [];
-  kids.push(el("div",{class:"dsec-head"},el("div",{},el("h2",{class:"label"},"Statistik"),el("p",{class:"dsub"},dash.loading?"Hämtar statistik från GitHub…":dash.t?"Uppdaterad "+ago(new Date(dash.t).toISOString()):"")),refresh));
+  kids.push(el("div",{class:"dsec-head"},el("div",{},el("h2",{class:"label"},"Statistik"+(tagFilter?" – #"+tagFilter:"")),el("p",{class:"dsub"},dash.loading?"Hämtar statistik från GitHub…":dash.t?"Uppdaterad "+ago(new Date(dash.t).toISOString()):"")),refresh));
   if(dash.err)kids.push(el("p",{class:"hint err"},dash.err));
 
   // Siffror
@@ -1748,6 +1762,26 @@ function dashNodes(){
     el("time",{},rel(c.date)),
     el("code",{},c.sha)))));
   grid.append(ev);
+  grid.append(tagCard());
+  function tagCard(){
+    const D2=dash.data||{};
+    const c30=x=>{const st=x.repo&&D2[x.repo];return st?st.commits.filter(c=>Date.now()-new Date(c.date)<30*864e5).length:0};
+    const map=new Map();
+    psAll.forEach(x=>{const ts=(x.it.tags||[]).length?x.it.tags:[null];ts.forEach(t=>{const k=t?t.toLowerCase():"";if(!map.has(k))map.set(k,{t,n:0,ch:0});const o=map.get(k);o.n++;o.ch+=c30(x)})});
+    const rows=[...map.values()].sort((a,b)=>(!a.t)-(!b.t)||b.n-a.n||b.ch-a.ch);
+    const maxN=Math.max(1,...rows.map(r=>r.n));
+    const nt=rows.filter(r=>r.t).length;
+    const card=dcard("d-tags",dhead("Taggar",[el("b",{},String(nt)),nt===1?" tagg":" taggar"]));
+    if(!nt){card.append(el("p",{class:"hint"},"Inga taggar än. Tryck på pennan på ett projektkort och skriv t.ex. #webb #spel."));return card}
+    card.append(el("div",{class:"dtags"},...rows.map(r=>{
+      const col=r.t?DOTS[[...r.t.toLowerCase()].reduce((h,ch)=>(h*31+ch.charCodeAt(0))>>>0,7)%DOTS.length]:"var(--muted)";
+      const on=!!(r.t&&tagFilter&&tagFilter.toLowerCase()===r.t.toLowerCase());
+      const inner=[el("span",{class:"dtg-top"},el("span",{class:"dtg-name"},r.t?"#"+r.t:"Utan tagg"),el("span",{class:"dtg-n"},r.n+" projekt · "+r.ch+(r.ch===1?" ändring":" ändringar"))),
+        el("span",{class:"dtg-bar"},el("i",{style:"width:"+Math.round(r.n/maxN*100)+"%;background:"+col}))];
+      return r.t?el("button",{class:"dtg"+(on?" on":""),type:"button",title:on?"Visa alla projekt":"Visa bara #"+r.t,onclick:()=>{tagFilter=on?null:r.t;renderPage(true)}},...inner):el("div",{class:"dtg"},...inner);
+    })));
+    return card;
+  }
   kids.push(grid);
   return kids;
 }
