@@ -32,17 +32,18 @@ try{var t=localStorage.getItem("vardagssidan.theme");if(t==="light"||t==="dark")
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
   --r:10px;
+  --side:#FFFFFF; --panel:#F8FAF8; --sel:#DCEAE6;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
   --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2; --danger:#F08A80; --warn:#E3C04A;
   --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
-  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); color-scheme:dark}}
+  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); --side:#0F1412; --panel:#171E1B; --sel:#1E2A27; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
   --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2; --danger:#F08A80; --warn:#E3C04A;
   --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
-  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); color-scheme:dark}
+  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); --side:#0F1412; --panel:#171E1B; --sel:#1E2A27; color-scheme:dark}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
@@ -81,7 +82,7 @@ header{display:flex;align-items:center;gap:8px}
 .sync{width:40px;height:40px;border:0;background:transparent;cursor:pointer;padding:0;border-radius:10px;display:grid;place-items:center}
 .sync:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
-.ok .dot{background:var(--accent)} .busy .dot{background:var(--warn)} .err .dot{background:var(--danger)}
+.ok .dot,.dot.ok{background:var(--accent)} .busy .dot,.dot.busy{background:var(--warn)} .err .dot,.dot.err{background:var(--danger)}
 @media (max-width:600px){
   header{flex-wrap:wrap;row-gap:10px}
   .info{order:3;flex-basis:100%;column-gap:14px}
@@ -212,41 +213,63 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .medit input{flex:1 1 200px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);font-weight:600}
 #sec-form .mform{max-width:560px}
 
-/* Sidomeny */
-.nav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
-.nav a{display:flex;align-items:center;gap:12px;padding:10px 10px;border-radius:9px;text-decoration:none;color:var(--ink);font-weight:500}
-.nav a:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
-.nav a[aria-current="page"]{background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:600}
-.nav .ico{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--bg);color:var(--muted);flex-shrink:0}
-.nav .ico svg{width:18px;height:18px}
-.nav .count{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.nav .lbl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Sidomeny: hopfällbar på datorn, utdragbar på mobilen */
+.app{display:flex;min-height:100vh}
+.content{flex:1;min-width:0}
+.side{position:sticky;top:0;align-self:flex-start;height:100vh;width:272px;flex-shrink:0;background:var(--side);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:2px;padding:16px 12px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;z-index:30}
+.side.collapsed{width:72px;align-items:center}
+.s-head{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 0 0 8px;margin-bottom:14px;width:100%;box-sizing:border-box}
+.collapsed .s-head{padding:0;justify-content:center}
+.s-logo{width:28px;height:28px;border-radius:8px;background:#126B5F;display:grid;place-items:center;flex-shrink:0}
+.s-logo i{width:12px;height:14px;background:#F2F4F1;border-radius:2px}
+.s-title{flex:1;font-family:var(--f-display);font-weight:700;font-size:18px;letter-spacing:-.01em;white-space:nowrap}
+.s-toggle{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
+.collapsed .s-toggle{width:44px;height:44px;border-radius:10px}
+.s-toggle:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.s-toggle svg{width:18px;height:18px}
+.s-item{display:flex;align-items:center;gap:12px;height:44px;padding:0 10px;border-radius:9px;color:var(--ink);text-decoration:none;font:inherit;font-weight:500;
+  width:100%;box-sizing:border-box;border:0;background:transparent;cursor:pointer;text-align:left;flex-shrink:0;position:relative}
+.s-item:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.s-item>svg,.s-item .s-ico svg{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.s-item[aria-current="page"]{background:var(--sel);font-weight:600}
+.s-item[aria-current="page"]>svg{color:var(--accent)}
+.s-item.muted{color:var(--muted)}
+.lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.count{font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.collapsed .s-item{width:44px;padding:0;justify-content:center}
+.collapsed .lbl,.collapsed .count,.collapsed .chev,.collapsed .s-title,.collapsed .s-logo,.collapsed .grp-title{display:none}
+.s-spacer{flex:1;min-height:20px}
+.grp{display:flex;align-items:center;justify-content:space-between;padding:0 4px 4px 10px;width:100%;box-sizing:border-box;flex-shrink:0}
+.collapsed .grp{justify-content:center;padding:0 0 4px}
+.grp-title{font-size:12px}
+.s-mini{width:30px;height:30px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
+.s-mini:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.s-mini svg{width:14px;height:14px}
+.p-item{height:40px;gap:14px}
+.collapsed .p-item{height:34px}
+.p-item[aria-pressed="true"]{background:var(--sel);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,var(--line))}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.chev{width:16px;height:16px;color:var(--muted);flex-shrink:0}
+.s-div{height:1px;background:var(--line);margin:12px 4px;width:calc(100% - 8px);flex-shrink:0}
+.collapsed .s-div{width:32px;margin:10px 0}
+.s-set{border:1px solid var(--line);height:48px}
+.collapsed .s-set{border:0;height:44px}
+.s-set .dot{margin-right:2px}
+.collapsed .s-set .dot{position:absolute;top:9px;right:9px;border:2px solid var(--side);width:9px;height:9px;margin:0}
+.s-form{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);margin:4px 0;width:100%;box-sizing:border-box}
+.s-form input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%;min-width:0}
+.s-form .row{justify-content:flex-start}
+#tip{position:fixed;z-index:70;background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;padding:6px 11px;border-radius:7px;pointer-events:none;white-space:nowrap;transform:translateY(-50%);box-shadow:var(--lift)}
 .drawer-scrim{position:fixed;inset:0;background:var(--scrim);z-index:45}
-.drawer{position:fixed;top:0;bottom:0;left:0;width:min(380px,88vw);background:var(--surface);border-right:1px solid var(--line);z-index:46;
-  display:flex;flex-direction:column;box-shadow:var(--lift);
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);
-  transform:translateX(-104%);visibility:hidden;transition:transform .24s ease,visibility 0s .24s}
-body.menu-open .drawer{transform:none;visibility:visible;transition:transform .24s ease}
-.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 10px 8px 20px}
-.drawer-head h2{font-family:var(--f-display);font-size:24px;margin:0;letter-spacing:-.01em}
-.drawer-body{flex:1;overflow:auto;padding:4px 14px 28px;display:flex;flex-direction:column;gap:22px;overscroll-behavior:contain}
-.msec{display:flex;flex-direction:column;gap:4px}
-.msec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 6px;min-height:34px}
-.msec-head .label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Delade småkomponenter */
 .mini{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:600;padding:6px 8px;border-radius:7px;cursor:pointer;min-height:32px}
 .mini:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
-.mlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.mrow{display:flex;align-items:center;gap:6px;border-radius:9px;padding-right:4px}
-.mrow:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
-.mrow>a:first-child{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 6px;text-decoration:none;color:var(--ink)}
-.mrow .mname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.mrow .msub{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
 .mono.sm{width:32px;height:32px;border-radius:9px;font-size:15px;flex-shrink:0}
 .chip{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
 .chip:hover{border-color:var(--accent)}
 .xs{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;flex-shrink:0;line-height:1;font-size:15px}
-.mempty{margin:0;padding:4px 6px;color:var(--muted);font-size:13.5px}
-.madd{align-self:flex-start;margin-left:2px}
 .mform{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);margin-top:4px}
 .mform input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%;min-width:0}
 .mform .row{justify-content:flex-start}
@@ -257,9 +280,47 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
 .repo b{font-weight:600;display:block}
 .repo small{color:var(--muted);display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .repo>span{min-width:0;flex:1}
-.newsec{border:1.5px dashed var(--line);border-radius:var(--r);padding:12px;color:var(--muted);background:transparent;cursor:pointer;font-weight:600;width:100%}
-.newsec:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
-@media (prefers-reduced-motion:reduce){.drawer,body.menu-open .drawer{transition:none}}
+
+/* Snabbpanel för ett projekt */
+.ppanel{position:sticky;top:0;align-self:flex-start;height:100vh;width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);
+  overflow-y:auto;padding:22px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;z-index:29}
+.pp-head{display:flex;align-items:flex-start;gap:12px}
+.pp-head .mono{width:40px;height:40px;border-radius:10px;font-size:18px;flex-shrink:0}
+.pp-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pp-name h2{margin:0;font-family:var(--f-display);font-size:19px;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}
+.pp-name a{font-size:12.5px;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-name a:hover{text-decoration:underline}
+.pp-desc{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.pp-acts{display:flex;flex-direction:column;gap:2px}
+.pp-acts .s-item{height:42px}
+.pp-acts .s-item.primary{background:var(--sel);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,var(--line))}
+.pp-acts .s-item.primary>svg{color:var(--accent)}
+.pp-sec{display:flex;flex-direction:column;gap:8px}
+.pp-sec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:30px}
+.commits{display:flex;flex-direction:column;gap:10px;font-size:13.5px;margin:0;padding:0;list-style:none}
+.commits li{display:flex;gap:10px;align-items:flex-start}
+.commits li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--muted);margin-top:7px;flex-shrink:0}
+.commits li:first-child::before{background:var(--accent)}
+.commits a{flex:1;min-width:0;color:var(--ink);text-decoration:none;overflow-wrap:anywhere}
+.commits a:hover{text-decoration:underline}
+.commits time{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pnote{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;font-size:13.5px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.pnote b{display:block;font-weight:600}
+.pnote span{color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.ntag{align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--muted);border:1px solid color-mix(in srgb,var(--ink) 18%,transparent);border-radius:999px;padding:1px 8px}
+.pp-close{margin-left:auto}
+
+@media (min-width:900px){#open-menu,header .tools{display:none}}
+@media (max-width:899px){
+  .side{position:fixed;left:0;top:0;bottom:0;height:auto;align-self:stretch;width:min(318px,88vw);z-index:46;box-shadow:var(--lift);
+    padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));
+    transform:translateX(-104%);visibility:hidden;transition:transform .24s ease,visibility 0s .24s}
+  body.menu-open .side{transform:none;visibility:visible;transition:transform .24s ease}
+  .s-item{height:48px}
+  .ppanel{position:fixed;inset:0;width:auto;height:auto;align-self:stretch;z-index:48;border:0;
+    padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+}
+@media (prefers-reduced-motion:reduce){.side,body.menu-open .side{transition:none}}
 
 @media (max-width:600px){
   body{font-size:16px}
@@ -283,9 +344,13 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
 </style>
 </head>
 <body>
+<div class="app">
+<aside class="side" id="side" aria-label="Huvudmeny"></aside>
+<aside class="ppanel" id="ppanel" hidden aria-label="Projekt"></aside>
+<div class="content">
 <div class="wrap">
   <header>
-    <button class="icon-btn" id="open-menu" type="button" aria-label="Öppna menyn" aria-controls="menu" aria-expanded="false" title="Meny">
+    <button class="icon-btn" id="open-menu" type="button" aria-label="Öppna menyn" aria-controls="side" aria-expanded="false" title="Meny">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
     </button>
     <h1 class="sr">Vardagssidan</h1>
@@ -299,9 +364,6 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
     </div>
     <div class="tools">
       <button class="sync" id="sync" type="button" title="Ansluter…"><i class="dot"></i><span class="sr">Ansluter…</span></button>
-      <button class="icon-btn" id="open-settings" type="button" aria-label="Inställningar" title="Inställningar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-      </button>
     </div>
   </header>
 
@@ -343,15 +405,12 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
     <div id="sec-form"></div>
   </main>
 </div>
+</div>
+</div>
 
-<!-- Sidomeny -->
+<!-- Mobil: mörk bakgrund bakom menyn -->
 <div class="drawer-scrim" id="menu-scrim" hidden></div>
-<aside class="drawer" id="menu" aria-labelledby="menu-h">
-  <div class="drawer-head"><h2 id="menu-h">Meny</h2>
-    <button class="icon-btn" id="menu-close" type="button" aria-label="Stäng menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  </div>
-  <div class="drawer-body" id="menu-body"></div>
-</aside>
+<div class="tip" id="tip" hidden role="tooltip"></div>
 
 <!-- Redigera anteckning -->
 <div class="scrim" id="note-scrim" hidden>
@@ -511,7 +570,11 @@ async function ghPut(file,sha){
   if(sha)body.sha=sha;
   return fetch(API,{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(body)});
 }
+let lastStatus={kind:"",text:""};
 function status(kind,text){
+  lastStatus={kind,text};
+  const sd=$("side-set");
+  if(sd){const d=sd.querySelector(".dot");d.className="dot "+kind;sd.querySelector(".st").textContent=text;sd.title="Inställningar – "+text}
   for(const el of [$("sync"),$("s-state")]){el.classList.remove("ok","busy","err");el.classList.add(kind);el.querySelector("span").textContent=text}
   $("sync").title=text;$("sync").setAttribute("aria-label","Sparstatus: "+text);
 }
@@ -592,7 +655,8 @@ function buildNote(id){
   return card;
 }
 function fillNote(card,n){
-  const sig=JSON.stringify([n.title,n.text,n.color,n.pinned,n.updated]);
+  const pf=n.project?findItem(n.project):null;
+  const sig=JSON.stringify([n.title,n.text,n.color,n.pinned,n.updated,pf?pf.it.name:""]);
   if(card._sig===sig)return;
   card._sig=sig;
   card.style.background="var(--n-"+(n.color||"plain")+")";
@@ -601,7 +665,7 @@ function fillNote(card,n){
   pin.innerHTML=n.pinned?PIN:PIN_O;
   const id=card.dataset.id;
   pin.addEventListener("click",e=>{e.stopPropagation();const v=items[id];if(!v)return;put(id,{...v,pinned:!v.pinned,order:topOrder(!v.pinned)})});
-  card.replaceChildren(...[n.title?el("h3",{},n.title):null,n.text?el("p",{},n.text):null,el("time",{},rel(n.updated||n.created)),pin].filter(Boolean));
+  card.replaceChildren(...[n.title?el("h3",{},n.title):null,n.text?el("p",{},n.text):null,pf?el("span",{class:"ntag"},pf.it.name):null,el("time",{},rel(n.updated||n.created)),pin].filter(Boolean));
 }
 function colCount(){
   const w=$("notes-sec").clientWidth;
@@ -741,7 +805,7 @@ function renderLinks(){
   tiles.push(el("button",{class:"link add-tile",type:"button",onclick:openLinkForm},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
   $("links").replaceChildren(...tiles);
 }
-function render(){renderNotes();renderLinks();renderMenu();renderPage()}
+function render(){renderNotes();renderLinks();renderSide();renderPage();renderPanel()}
 
 
 // ---------- Sektioner (Projekt + egna) ----------
@@ -767,42 +831,62 @@ function go(id){
 function onRoute(){
   route=decodeURIComponent(location.hash.slice(1));
   secEdit=false;secAdd=false;repoOpen=false;
-  renderPage(true);renderMenu();window.scrollTo(0,0);
+  renderPage(true);renderSide();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",onRoute);
 window.addEventListener("popstate",()=>{if(!location.hash)onRoute()});
 $("sec-back").onclick=e=>{e.preventDefault();go("")};
 
-// --- Sidomenyn ---
-function openMenu(){document.body.classList.add("menu-open");$("menu-scrim").hidden=false;$("open-menu").setAttribute("aria-expanded","true");renderMenu();setTimeout(()=>$("menu-close").focus(),50)}
-function closeMenu(){document.body.classList.remove("menu-open");$("menu-scrim").hidden=true;$("open-menu").setAttribute("aria-expanded","false");if(menuNewSec){menuNewSec=false;renderMenu()}}
+// --- Sidomenyn (hopfällbar på datorn, utdragbar på mobilen) ---
+const K_SIDE="vardagssidan.side";
+const deskMQ=window.matchMedia("(min-width: 900px)");
+let sideCollapsed=lsGet(K_SIDE)==="collapsed", panelItem=null;
+const DOTS=["#2C8F80","#3F7FC0","#C9772E","#8DA33A","#C2566A","#7A8A86","#D08A3A","#3A9BB0"];
+function dotColor(name){return DOTS[(name.charCodeAt(0)+name.length)%DOTS.length]}
+const SVG=(d,extra)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'+(extra||"")+'>'+d+'</svg>';
+const I_SIDE_IN=SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15M15.5 10l-2 2 2 2"/>');
+const I_SIDE_OUT=SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15M13.5 10l2 2-2 2"/>');
+const I_X=SVG('<path d="M6 6l12 12M18 6L6 18"/>');
+const I_PLUS=SVG('<path d="M12 5v14M5 12h14"/>');
+const I_CHEV=SVG('<path d="M9 6l6 6-6 6"/>',' class="chev"');
+const I_GEAR=SVG('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>');
+const I_EXT=SVG('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
+const I_COPY=SVG('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>');
+function html(tag,attrs,svg,...kids){const e=el(tag,attrs);if(svg)e.insertAdjacentHTML("beforeend",svg);for(const k of kids)if(k!=null)e.append(k);return e}
+function isMobile(){return !deskMQ.matches}
+function openMenu(){document.body.classList.add("menu-open");$("menu-scrim").hidden=false;$("open-menu").setAttribute("aria-expanded","true");renderSide();setTimeout(()=>{const t=$("side").querySelector(".s-toggle");if(t)t.focus()},60)}
+function closeMenu(){if(!document.body.classList.contains("menu-open"))return;document.body.classList.remove("menu-open");$("menu-scrim").hidden=true;$("open-menu").setAttribute("aria-expanded","false");if(menuNewSec){menuNewSec=false;renderSide()}}
 $("open-menu").onclick=openMenu;
-$("menu-close").onclick=closeMenu;
 $("menu-scrim").onclick=closeMenu;
-function navLink(id,label,icon,count){
-  const a=el("a",{href:id?"#"+encodeURIComponent(id):"#"});
-  const ico=el("span",{class:"ico"});ico.innerHTML=icon;
-  a.append(ico,el("span",{class:"lbl"},label));
-  if(count!=null)a.append(el("span",{class:"count"},String(count)));
+function setCollapsed(v){sideCollapsed=v;lsSet(K_SIDE,v?"collapsed":null);hideTip();renderSide()}
+if(deskMQ.addEventListener)deskMQ.addEventListener("change",()=>{closeMenu();renderSide();renderPanel()});
+function projSection(){const l=sectionList();return l.find(([k])=>k==="s_projekt")||l.find(([,v])=>(v.title||"").trim().toLowerCase()==="projekt")||null}
+function sideItem(id,label,icon,count){
   const cur=getSection(route)?route:"";
+  const a=html("a",{class:"s-item",href:id?"#"+encodeURIComponent(id):"#","data-tip":label},icon,el("span",{class:"lbl"},label),count!=null?el("span",{class:"count"},String(count)):null);
   if(cur===id)a.setAttribute("aria-current","page");
   a.addEventListener("click",e=>{e.preventDefault();closeMenu();go(id)});
-  return el("li",{},a);
+  return a;
 }
-function renderMenu(){
-  const body=$("menu-body");
-  if(body.contains(document.activeElement)&&document.activeElement.tagName==="INPUT")return;
-  const nav=el("ul",{class:"nav"},navLink("","Start",ICO_HOME),
-    ...sectionList().map(([sid,sec])=>navLink(sid,sec.title||"Namnlös",sid==="s_projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
-  const blocks=[el("section",{class:"msec"},el("div",{class:"msec-head"},el("h3",{class:"label"},"Sidor")),nav)];
-  if(menuNewSec){
-    const f=el("form",{class:"mform",autocomplete:"off"});
-    const t=el("input",{id:"m-newsec",placeholder:"Namn på sidan, t.ex. Skola","aria-label":"Namn på ny sektion"});
-    f.append(t,el("div",{class:"row"},el("button",{class:"btn primary",type:"submit"},"Skapa"),el("button",{class:"btn",type:"button",onclick:()=>{menuNewSec=false;renderMenu()}},"Avbryt")));
+function renderSide(){
+  const side=$("side");
+  const collapsed=sideCollapsed&&!isMobile();
+  side.classList.toggle("collapsed",collapsed);
+  if(side.contains(document.activeElement)&&document.activeElement.tagName==="INPUT")return;
+  const kids=[];
+  const toggle=isMobile()
+    ?html("button",{class:"s-toggle",type:"button","aria-label":"Stäng menyn",onclick:closeMenu},I_X)
+    :html("button",{class:"s-toggle",type:"button","aria-label":collapsed?"Fäll ut menyn":"Fäll ihop menyn","data-tip":collapsed?"Fäll ut menyn":"","aria-expanded":String(!collapsed),onclick:()=>setCollapsed(!collapsed)},collapsed?I_SIDE_OUT:I_SIDE_IN);
+  kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},'<i></i>'),el("span",{class:"s-title"},"Vardagssidan"),toggle));
+  kids.push(sideItem("","Start",ICO_HOME));
+  sectionList().forEach(([sid,sec])=>kids.push(sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
+  if(menuNewSec&&!collapsed){
+    const f=el("form",{class:"s-form",autocomplete:"off"});
+    const t=el("input",{id:"m-newsec",placeholder:"Namn, t.ex. Skola","aria-label":"Namn på ny sektion"});
+    f.append(t,el("div",{class:"row"},el("button",{class:"btn primary",type:"submit"},"Skapa"),el("button",{class:"btn",type:"button",onclick:()=>{menuNewSec=false;renderSide()}},"Avbryt")));
     f.addEventListener("submit",e=>{
       e.preventDefault();const v=t.value.trim();if(!v){t.focus();return}
       const list=sectionList();
-      // Om "Projekt" bara visas (inte sparad än) sparas den först så att den ligger kvar
       list.forEach(([k,sv])=>{if(!items[k]){items[k]=sv;pending.push({op:"put",id:k,data:sv})}});
       const max=Math.max(0,...list.map(([,sv])=>sv.order||0));
       const id=uid("s_");
@@ -810,9 +894,97 @@ function renderMenu(){
       put(id,{kind:"section",title:v,order:max+1,items:[]});
       closeMenu();go(id);
     });
-    blocks.push(f);setTimeout(()=>t.focus(),30);
-  }else blocks.push(el("button",{class:"newsec",type:"button",onclick:()=>{menuNewSec=true;renderMenu()}},"+ Ny sektion"));
-  body.replaceChildren(...blocks);
+    kids.push(f);setTimeout(()=>t.focus(),30);
+  }else kids.push(html("button",{class:"s-item muted",type:"button","data-tip":"Ny sektion",onclick:()=>{if(collapsed){sideCollapsed=false;lsSet(K_SIDE,null)}menuNewSec=true;hideTip();renderSide()}},I_PLUS,el("span",{class:"lbl"},"Ny sektion")));
+
+  kids.push(el("div",{class:"s-spacer"}));
+  const ps=projSection();
+  if(ps){
+    const [psid,psec]=ps;
+    kids.push(el("div",{class:"grp"},el("h2",{class:"label grp-title"},psec.title||"Projekt"),
+      html("button",{class:"s-mini",type:"button","aria-label":"Lägg till projekt","data-tip":"Lägg till projekt",onclick:()=>{closeMenu();go(psid);secAdd=true;renderPage(true);setTimeout(()=>{const x=$("m-name");if(x)x.focus()},40)}},I_PLUS)));
+    (psec.items||[]).forEach(it=>{
+      const on=!!(panelItem&&panelItem.iid===it.id);
+      kids.push(html("button",{class:"s-item p-item",type:"button","data-tip":it.name,"aria-pressed":String(on),onclick:()=>on?closePanel():openPanel(psid,it.id)},null,
+        el("span",{class:"pdot",style:"background:"+dotColor(it.name)}),el("span",{class:"lbl"},it.name),html("span",{class:"chev-wrap","aria-hidden":"true",style:"display:contents"},I_CHEV)));
+    });
+  }
+  kids.push(el("div",{class:"s-div"}));
+  kids.push(html("button",{class:"s-item s-set",type:"button",id:"side-set","data-tip":"Inställningar",onclick:()=>{closeMenu();openSettings()}},I_GEAR,el("span",{class:"lbl"},"Inställningar"),el("i",{class:"dot "+(lastStatus.kind||"")}),el("span",{class:"sr st"},lastStatus.text||"")));
+  side.replaceChildren(...kids);
+}
+
+// Små namnlappar när menyn är hopfälld
+function hideTip(){$("tip").hidden=true}
+function showTip(t){
+  if(!$("side").classList.contains("collapsed"))return;
+  const txt=t.getAttribute("data-tip");if(!txt)return;
+  const r=t.getBoundingClientRect(),tip=$("tip");
+  tip.textContent=txt;tip.style.left=(r.right+10)+"px";tip.style.top=(r.top+r.height/2)+"px";tip.hidden=false;
+}
+$("side").addEventListener("mouseover",e=>{const t=e.target.closest("[data-tip]");if(t)showTip(t);else hideTip()});
+$("side").addEventListener("mouseleave",hideTip);
+$("side").addEventListener("focusin",e=>{const t=e.target.closest("[data-tip]");if(t)showTip(t)});
+$("side").addEventListener("focusout",hideTip);
+$("side").addEventListener("scroll",hideTip);
+
+// --- Snabbpanel för ett projekt ---
+const commitCache={};
+function ghRepoOf(url){const m=/github\.com\/([^\/]+)\/([^\/#?]+)/i.exec(url||"");return m?m[1]+"/"+m[2].replace(/\.git$/,""):null}
+function findItem(iid){for(const [sid,sec] of sectionList()){const it=(sec.items||[]).find(x=>x.id===iid);if(it)return {sid,sec,it}}return null}
+function openPanel(sid,iid){panelItem={sid,iid};closeMenu();hideTip();renderPanel();renderSide();const p=$("ppanel");p.scrollTop=0;if(isMobile())setTimeout(()=>{const c=p.querySelector(".pp-close");if(c)c.focus()},30)}
+function closePanel(){panelItem=null;$("ppanel").hidden=true;renderSide()}
+async function loadCommits(repo){
+  commitCache[repo]={t:Date.now(),loading:true};
+  try{
+    const r=await fetch("https://api.github.com/repos/"+repo+"/commits?per_page=4",{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});
+    if(!r.ok)throw r.status;
+    const j=await r.json();
+    commitCache[repo]={t:Date.now(),list:j.map(c=>({msg:(c.commit&&c.commit.message||"").split("\n")[0],date:c.commit&&c.commit.author&&c.commit.author.date,url:c.html_url}))};
+  }catch(e){commitCache[repo]={t:Date.now(),err:e===404?"Inga ändringar att visa. Repot kan vara privat.":"Kunde inte hämta ändringar just nu."}}
+  renderPanel();
+}
+function renderPanel(){
+  const p=$("ppanel");
+  if(!panelItem){p.hidden=true;return}
+  const f=findItem(panelItem.iid);
+  if(!f){panelItem=null;p.hidden=true;return}
+  const {it}=f;
+  p.hidden=false;p.setAttribute("aria-label",it.name);
+  const kids=[];
+  const shown=it.site||it.url;
+  kids.push(el("div",{class:"pp-head"},monoFor(it.name),
+    el("div",{class:"pp-name"},el("h2",{},it.name),el("a",{href:shown,target:"_blank",rel:"noopener",title:shown},shown.replace(/^https?:\/\//,"").replace(/\/$/,""))),
+    html("button",{class:"icon-btn pp-close",type:"button","aria-label":"Stäng panelen",onclick:closePanel},I_X)));
+  if(it.desc)kids.push(el("p",{class:"pp-desc"},it.desc));
+  const acts=el("div",{class:"pp-acts"});
+  if(it.site)acts.append(html("a",{class:"s-item primary",href:it.site,target:"_blank",rel:"noopener"},I_EXT,el("span",{class:"lbl"},"Öppna sidan")));
+  const repo=ghRepoOf(it.url);
+  acts.append(html("a",{class:"s-item"+(it.site?"":" primary"),href:it.url,target:"_blank",rel:"noopener"},repo?ICO_CODE:I_EXT,el("span",{class:"lbl"},repo?"Repot på GitHub":"Öppna länken")));
+  acts.append(html("button",{class:"s-item",type:"button",onclick:async()=>{
+    const link=it.site||it.url;
+    try{await navigator.clipboard.writeText(link);toast("Länken är kopierad")}catch(_){toast(link)}
+  }},I_COPY,el("span",{class:"lbl"},"Kopiera länken")));
+  kids.push(acts);
+  if(repo){
+    const c=commitCache[repo];
+    if(!c||(!c.loading&&Date.now()-c.t>5*60*1000))loadCommits(repo);
+    const box=el("div",{class:"pp-sec"},el("div",{class:"pp-sec-head"},el("h3",{class:"label"},"Senaste ändringar")));
+    const cc=commitCache[repo];
+    if(!cc||cc.loading)box.append(el("p",{class:"hint"},"Hämtar…"));
+    else if(cc.err)box.append(el("p",{class:"hint"},cc.err));
+    else if(!cc.list.length)box.append(el("p",{class:"hint"},"Inga ändringar än."));
+    else box.append(el("ul",{class:"commits"},...cc.list.map(x=>el("li",{},el("a",{href:x.url,target:"_blank",rel:"noopener"},x.msg),el("time",{},x.date?rel(x.date):"")))));
+    kids.push(box);
+  }
+  const notes=Object.entries(items).filter(([,v])=>v.kind==="note"&&v.project===it.id).sort((a,b)=>(b[1].updated||0)-(a[1].updated||0));
+  const nb=el("div",{class:"pp-sec"},el("div",{class:"pp-sec-head"},el("h3",{class:"label"},"Anteckningar om projektet"),
+    html("button",{class:"s-mini",type:"button","aria-label":"Ny anteckning för "+it.name,onclick:()=>newNoteFor(it.id)},I_PLUS)));
+  if(!notes.length)nb.append(el("p",{class:"hint"},"Inga anteckningar än. Tryck på + för att skriva en."));
+  notes.slice(0,6).forEach(([id,n])=>nb.append(el("button",{class:"pnote",type:"button",style:"background:var(--n-"+(n.color||"plain")+")",onclick:()=>openNote(id)},
+    n.title?el("b",{},n.title):null,n.text?el("span",{},n.text):null)));
+  kids.push(nb);
+  p.replaceChildren(...kids);
 }
 
 // --- Sektionssidan ---
@@ -969,8 +1141,23 @@ function openNote(id){
   $("note-scrim").hidden=false;
   if(!matchMedia("(pointer:coarse)").matches)$("d-text").focus();
 }
+let draftProject=null;
+function newNoteFor(pid){
+  editing="__new";draftProject=pid;dColor="plain";
+  $("d-title").value="";$("d-text").value="";
+  $("dlg").style.background="var(--n-plain)";
+  swatches($("d-sw"),()=>dColor,c=>{dColor=c;$("dlg").style.background="var(--n-"+c+")"});
+  $("note-scrim").hidden=false;$("d-title").focus();
+}
 function closeNote(){
   if(!editing)return;
+  if(editing==="__new"){
+    const title=$("d-title").value.trim(),text=$("d-text").value.trim();
+    editing=null;$("note-scrim").hidden=true;
+    if(title||text){const now=Date.now();put(uid("n_"),{kind:"note",title,text,color:dColor,pinned:false,order:topOrder(false),project:draftProject,created:now,updated:now})}
+    else if(needRender){needRender=false;render()}
+    draftProject=null;return;
+  }
   const id=editing,n=items[id], title=$("d-title").value.trim(), text=$("d-text").value.trim();
   editing=null; $("note-scrim").hidden=true;
   if(!n){if(needRender){needRender=false;render()}return}
@@ -981,8 +1168,8 @@ function closeNote(){
 function removeNote(id,n){del(id);toast("Anteckningen togs bort",()=>put(id,n))}
 $("dlg").addEventListener("submit",e=>{e.preventDefault();closeNote()});
 $("note-scrim").addEventListener("mousedown",e=>{if(e.target===$("note-scrim"))closeNote()});
-$("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;$("note-scrim").hidden=true;if(n)removeNote(id,n)};
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu()});
+$("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;draftProject=null;$("note-scrim").hidden=true;if(n)removeNote(id,n)};
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu();else if(panelItem)closePanel()});
 
 // ---------- Länkar: lägg till / ta bort ----------
 function openLinkForm(){$("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent="Du behöver inte skriva https:// – det läggs till automatiskt.";$("l-name").focus()}
@@ -1012,7 +1199,6 @@ function toast(msg,undo){
 // ---------- Inställningar ----------
 function openSettings(){$("s-token").value=token();updateInstall();$("set-scrim").hidden=false}
 function closeSettings(){$("set-scrim").hidden=true}
-$("open-settings").onclick=openSettings;
 $("sync").onclick=openSettings;
 $("s-close").onclick=closeSettings;
 $("set-scrim").addEventListener("mousedown",e=>{if(e.target===$("set-scrim"))closeSettings()});
