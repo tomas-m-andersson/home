@@ -1376,6 +1376,9 @@ function renderPage(force){
   const cards=list.map(it=>card(sid,sec,it));
   setTimeout(()=>{
     hydrateImgs($("view-section"));
+    // Gör "+ Lägg till" lika hög som ett ihopfällt projektkort
+    const add=document.querySelector("#sec-cards .card-add"),ref=document.querySelector("#sec-cards .card:not(.card-add):not(.open)");
+    if(add)add.style.height=ref?ref.offsetHeight+"px":"";
     document.querySelectorAll("#sec-cards .card:not(.has-desc):not(.card-add)").forEach(c=>{
       const n=c.querySelector(".name");
       if(c.classList.contains("open")||(n&&n.scrollWidth>n.clientWidth+1)){c.classList.add("has-desc");c.querySelector(".top").insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>')}
