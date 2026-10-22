@@ -906,11 +906,10 @@ function dragMove(){
   const under=document.elementFromPoint(drag.x,drag.y);
   const t=under&&under.closest(".note");
   if(t&&t!==drag.card&&drag.list.includes(t.dataset.id)&&drag.box){
-    const r=t.getBoundingClientRect();
-    const after=drag.y>r.top+r.height/2;
+    // Lappen tar målets plats: drar du bakåt hamnar den före målet, framåt hamnar den efter
+    const from=drag.list.indexOf(drag.id),to=drag.list.indexOf(t.dataset.id);
     const ids=drag.list.filter(i=>i!==drag.id);
-    const k=ids.indexOf(t.dataset.id)+(after?1:0);
-    ids.splice(k,0,drag.id);
+    ids.splice(to,0,drag.id);
     if(ids.join()!==drag.list.join()){drag.list=ids;layoutGroup(drag.box,ids)}
   }
   // Rulla sidan när man drar nära kanten
