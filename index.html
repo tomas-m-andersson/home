@@ -68,7 +68,7 @@ header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:680px}
 .tools{margin-left:auto}
 
 /* Infopanel: datum, tid, väder, sol och regn */
-.info{display:flex;flex-wrap:wrap;align-items:center;column-gap:16px;row-gap:6px;min-width:0;min-height:50px;box-sizing:border-box;
+.info{display:flex;flex-wrap:wrap;align-items:center;column-gap:14px;row-gap:6px;min-width:0;min-height:50px;box-sizing:border-box;
   padding:9px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:13.5px;line-height:1.3}
 .info b{font-weight:600}
 .mut{color:var(--muted)}
@@ -1283,13 +1283,12 @@ function renderWxExtras(){
   if(!sun)return;
   if(!getPlace()||!w||!w.data||!w.data.daily){sun.hidden=true;rain.hidden=true;return}
   const now=new Date(),d=w.data.daily;
-  // Sol: nästa soluppgång eller solnedgång
+  // Sol: dagens soluppgång och solnedgång
   const rise0=new Date(d.sunrise[0]),set0=new Date(d.sunset[0]);
-  let ico,txt;
-  if(now<rise0){ico="sunrise";txt="Sol upp "+hhmm(rise0)}
-  else if(now<set0){ico="sunset";txt="Sol ner "+hhmm(set0)}
-  else if(d.sunrise[1]){ico="sunrise";txt="Sol upp "+hhmm(new Date(d.sunrise[1]))}
-  if(txt){sun.innerHTML=WX_ICO[ico];sun.append(txt);sun.hidden=false}else sun.hidden=true;
+  sun.innerHTML=WX_ICO.sunrise;sun.append("Upp "+hhmm(rise0));
+  sun.insertAdjacentHTML("beforeend",'<span style="width:6px"></span>'+WX_ICO.sunset);sun.append("Ner "+hhmm(set0));
+  sun.title="Solen går upp "+hhmm(rise0)+" och ner "+hhmm(set0)+" idag";
+  sun.hidden=false;
   // Regn: första timmen de närmaste 12 timmarna med minst 50 % risk
   const h=w.data.hourly;rain.hidden=true;
   if(h&&h.time){
@@ -1300,7 +1299,7 @@ function renderWxExtras(){
         if((h.precipitation_probability[j]||0)>=50){
           if(j===i&&curWet)break;
           rain.innerHTML=WX_ICO.umbrella;
-          rain.append(j===i?"Regn nu":"Regn ca "+h.time[j].slice(11,16));
+          rain.append(j===i?"Regn nu":"Regn "+h.time[j].slice(11,16));rain.title=j===i?"Det regnar troligen nu":"Risk för regn från ca "+h.time[j].slice(11,16);
           rain.hidden=false;break;
         }
       }
