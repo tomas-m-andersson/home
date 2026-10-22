@@ -377,6 +377,8 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .cover-edit label.btn{cursor:pointer;display:inline-flex;align-items:center}
 @media (max-width:600px){.pj-cover{aspect-ratio:2.4/1}}
 
+#notes-sec{max-width:var(--colw)}
+
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
 .dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
@@ -685,7 +687,7 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
   </section>
 
   <section aria-labelledby="h-notes" id="notes-sec">
-    <div class="sec-head"><h2 class="label" id="h-notes">Anteckningar</h2><p class="tip" id="drag-tip">Dra för att flytta</p></div>
+    <div class="sec-head"><h2 class="label" id="h-notes">Anteckningar</h2></div>
     <div id="pinned-wrap" hidden><h3 class="label subhead">Fästa</h3><div class="notes" id="pinned"></div><div class="group-gap"></div><h3 class="label subhead">Övriga</h3></div>
     <div class="notes" id="notes"></div>
     <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
@@ -1106,8 +1108,6 @@ function renderNotes(){
   if(both){layoutGroup($("pinned"),p);layoutGroup($("notes"),r)}
   else{layoutGroup($("pinned"),[]);layoutGroup($("notes"),p.length?p:r)}
   $("empty").hidden=alive.size>0;
-  $("drag-tip").hidden=alive.size<2;
-  $("drag-tip").textContent=matchMedia("(pointer:coarse)").matches?"Håll in för att flytta":"Dra för att flytta";
 }
 function boxOf(id){const c=noteEls.get(id);return c&&c.parentElement?c.parentElement.parentElement:null}
 function saveOrder(ids){
