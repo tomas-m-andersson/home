@@ -366,6 +366,14 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .chk-sm{display:flex;align-items:flex-start;gap:8px;font-weight:400;color:var(--ink);font-size:13.5px;cursor:pointer}
 .chk-sm input{width:18px;height:18px;accent-color:var(--accent);margin:1px 0 0;flex-shrink:0}
 
+.pj-cover{display:block;width:100%;aspect-ratio:4.5/1;border-radius:12px;overflow:hidden;border:1px solid var(--line);padding:0;background:var(--bg);cursor:zoom-in}
+.pj-cover img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.pj-cover.small{max-width:420px;cursor:default}
+.pj-cover.empty{display:grid;place-items:center;color:var(--muted);font-size:13px;border-style:dashed}
+.cover-edit{display:flex;flex-direction:column;gap:8px}
+.cover-edit label.btn{cursor:pointer;display:inline-flex;align-items:center}
+@media (max-width:600px){.pj-cover{aspect-ratio:2.4/1}}
+
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
 .dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
@@ -918,6 +926,21 @@ async function uploadIcon(file,prefix){
   const blob=await new Promise(res=>c.toBlob(res,"image/png"));
   const path=IMG_DIR+"icon-"+prefix+"-"+Date.now().toString(36)+".png";
   const r=await fetch(apiUrl(path),{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({message:"Lägg till ikon",content:await blobToB64(blob),branch:GH.branch})});
+  if(!r.ok)throw r.status;
+  imgCache.set(path,URL.createObjectURL(blob));
+  return path;
+}
+async function uploadCover(file,prefix){
+  let src;
+  try{src=await createImageBitmap(file,{imageOrientation:"from-image"})}
+  catch(_){src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)})}
+  const k=Math.min(1,1800/src.width),c=document.createElement("canvas");
+  c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);
+  const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);
+  const png=/png|gif/i.test(file.type)&&c.width*c.height<1200*800;   // pixelgrafik och små bilder hålls skarpa
+  const blob=await new Promise(res=>c.toBlob(res,png?"image/png":"image/jpeg",0.86));
+  const path=IMG_DIR+"cover-"+prefix+"-"+Date.now().toString(36)+(png?".png":".jpg");
+  const r=await fetch(apiUrl(path),{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({message:"Lägg till projektbild",content:await blobToB64(blob),branch:GH.branch})});
   if(!r.ok)throw r.status;
   imgCache.set(path,URL.createObjectURL(blob));
   return path;
@@ -1557,6 +1580,7 @@ function renderProject(force){
   kids.push(el("header",{class:"pj-top"},big,el("div",{class:"pj-title"},el("h2",{class:"page-title"},it.name),link?el("a",{href:link,target:"_blank",rel:"noopener"},link.replace(/^https?:\/\//,"").replace(/\/$/,"")):repo?el("a",{href:"https://github.com/"+repo,target:"_blank",rel:"noopener"},"github.com/"+repo):null,(it.tags||[]).length?el("span",{class:"tags"},...tagChips(it.tags,t=>{nextTagFilter=t;go(sid)})):null),btns));
   if(secAdd===it.id)kids.push(addForm(sid,sec));
   if(it.desc)kids.push(el("p",{class:"pj-desc"},it.desc));
+  if(it.cover)kids.push(el("button",{class:"pj-cover",type:"button","aria-label":"Visa projektbilden större",onclick:()=>openLightbox([it.cover],0)},el("img",{"data-path":it.cover,alt:""})));
 
   // GitHub
   if(repo){
@@ -1995,7 +2019,7 @@ const touchUI=()=>matchMedia("(pointer:coarse)").matches;
 // På mobilen flyttas bara formuläret fram – tangentbordet öppnas först när du trycker i ett fält
 function focusForm(){setTimeout(()=>{const x=$("m-name");if(!x)return;if(touchUI())x.closest("form").scrollIntoView({block:"start",behavior:"smooth"});else{x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},60)}
 function normUrl(u){u=(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);if(!x.hostname.includes("."))return null}catch(_){return null}return u}
-let formFor=null,formImgs=[],formUploaded=[],formBusy=0,formIcon=null,formAuto=true;
+let formFor=null,formImgs=[],formUploaded=[],formBusy=0,formIcon=null,formAuto=true,formCover=null;
 function addForm(sid,sec){
   const editId=typeof secAdd==="string"?secAdd:null;
   const old=editId?(sec.items||[]).find(x=>x.id===editId):null;
@@ -2016,7 +2040,7 @@ function addForm(sid,sec){
   if(repoLab){repoLab.hidden=!ghChk.checked;ghChk.addEventListener("change",()=>{repoLab.hidden=!ghChk.checked})}
   if(old&&old.tags)tagsIn.value=old.tags.map(t=>"#"+t).join(" ");
   // Bilder: laddas upp direkt när du väljer dem, kopplas till projektet när du sparar
-  if(formFor!==secAdd){formFor=secAdd;formImgs=old?[...(old.images||[])]:[];formUploaded=[];formBusy=0;formIcon=old?old.icon||null:null;formAuto=old?old.autoIcon!==false:true}
+  if(formFor!==secAdd){formFor=secAdd;formImgs=old?[...(old.images||[])]:[];formUploaded=[];formBusy=0;formIcon=old?old.icon||null:null;formAuto=old?old.autoIcon!==false:true;formCover=old?old.cover||null:null}
   const gbox=el("div",{class:"gal gal-edit"});
   const ghint=el("p",{class:"hint"});
   function drawImgs(){
@@ -2067,9 +2091,28 @@ function addForm(sid,sec){
   [name,url,repoIn].forEach(x=>x.addEventListener("change",()=>{if(!formIcon)drawIcon()}));
   ghChk.addEventListener("change",()=>{if(!formIcon)drawIcon()});
   f.append(el("div",{class:"flab"},el("span",{},"Ikon (frivilligt)"),ibox));
+  // Projektbild (stor bild överst på projektsidan)
+  const cbox=el("div",{class:"cover-edit"}),cHint=el("span",{class:"pj-sub"});
+  const cin=el("input",{type:"file",accept:"image/*",hidden:"",id:"m-cover"});
+  cin.addEventListener("change",async()=>{
+    const file=cin.files[0];if(!file)return;
+    if(!token()){cHint.textContent="Lägg in din GitHub-token i Inställningar för att ladda upp.";return}
+    cHint.textContent="Laddar upp…";
+    try{const path=await uploadCover(file,old?old.id:"ny");formCover=path;formUploaded.push(path);cHint.textContent="";drawCover()}
+    catch(e){cHint.textContent="Kunde inte ladda upp bilden. Försök igen."}
+  });
+  function drawCover(){
+    const prev=formCover?el("div",{class:"pj-cover small"},el("img",{"data-path":formCover,alt:""})):el("div",{class:"pj-cover small empty"},el("span",{},"Ingen projektbild"));
+    cbox.replaceChildren(prev,el("div",{class:"row",style:"justify-content:flex-start"},
+      el("label",{class:"btn outline",for:"m-cover",tabindex:"0"},cin,formCover?"Byt bild":"Välj bild"),
+      formCover?el("button",{class:"btn",type:"button",onclick:()=>{formCover=null;drawCover()}},"Ta bort bild"):null),cHint);
+    hydrateImgs(cbox);
+  }
+  drawCover();
+  f.append(el("div",{class:"flab"},el("span",{},"Projektbild (frivilligt) – visas stort överst på projektsidan"),cbox));
   f.append(el("div",{class:"flab"},el("span",{},"Bilder (frivilligt) – visas när kortet fälls ut"),gbox,ghint),hint);
   const cancel=()=>{
-    const keep=new Set(old?[...(old.images||[]),old.icon].filter(Boolean):[]);formUploaded.filter(x=>!keep.has(x)).forEach(deleteImage);
+    const keep=new Set(old?[...(old.images||[]),old.icon,old.cover].filter(Boolean):[]);formUploaded.filter(x=>!keep.has(x)).forEach(deleteImage);
     formFor=null;secAdd=false;repoOpen=false;renderPage(true)};
   if(old)f.append(el("div",{class:"row"},
     el("button",{class:"btn primary",type:"submit"},"Spara ändringar"),
@@ -2106,6 +2149,9 @@ function addForm(sid,sec){
     if(old&&old.icon&&old.icon!==formIcon)deleteImage(old.icon);
     formUploaded.filter(x=>x.includes("/icon-")&&x!==formIcon).forEach(deleteImage);
     if(formIcon)item.icon=formIcon;else delete item.icon;
+    if(old&&old.cover&&old.cover!==formCover)deleteImage(old.cover);
+    formUploaded.filter(x=>x.includes("/cover-")&&x!==formCover).forEach(deleteImage);
+    if(formCover)item.cover=formCover;else delete item.cover;
     if(!formAuto)item.autoIcon=false;else delete item.autoIcon;
     formFor=null;
     document.activeElement&&document.activeElement.blur();
