@@ -357,6 +357,18 @@ body.dragging,body.dragging *{cursor:grabbing!important}
   .cards{grid-template-columns:1fr}
   .links{grid-template-columns:repeat(auto-fill,70px);gap:4px;margin-left:-12px}
   .links-sec{max-width:none}
+  /* Redigeringsläge på mobilen: länkarna blir en lista med stora, tydliga knappar */
+  .links.editing{display:flex;flex-direction:column;gap:6px;margin-left:0}
+  .links.editing .link{flex-direction:row;gap:12px;width:100%;padding:6px 6px 6px 10px;box-sizing:border-box;background:var(--surface);border:1px solid var(--line);animation:none}
+  .links.editing .link:not(.add-tile){animation:none}
+  .links.editing .link .mono{width:36px;height:36px;border-radius:10px;font-size:16px;order:0;flex-shrink:0}
+  .links.editing .link span{order:1;flex:1;text-align:left;font-size:15px}
+  .links.editing .link .e,.links.editing .link .x{position:static;width:44px;height:44px;border-radius:10px;font-size:22px;flex-shrink:0}
+  .links.editing .link .e{order:2}
+  .links.editing .link .x{order:3;color:var(--danger)}
+  .links.editing .link .e svg{width:18px;height:18px}
+  .links.editing .add-tile{border-style:dashed;background:transparent}
+  .links.editing .add-tile .mono{font-size:22px}
   .link{padding:10px 2px 8px}
   .link span{font-size:12px}
   .note{padding:12px 13px 9px}
