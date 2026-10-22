@@ -447,20 +447,6 @@ body.dragging,body.dragging *{cursor:grabbing!important}
       <p>Auto följer inställningen i din telefon eller dator.</p>
     </section>
 
-    <section class="set-sec" aria-labelledby="s-gh-h">
-      <h3 class="label" id="s-gh-h">Sparas på GitHub</h3>
-      <p class="state" id="s-state"><i class="dot"></i><span>–</span></p>
-      <form id="setform" autocomplete="off" style="display:flex;flex-direction:column;gap:10px">
-        <label for="s-token">GitHub-token</label>
-        <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
-        <p>Allt sparas i <code>data.json</code> i det privata repot <code>home-data</code>. Token behöver <b>Contents: Read and write</b> på home-data och sparas bara på den här enheten.</p>
-        <div class="row">
-          <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
-          <button type="button" class="btn outline" id="s-sync">Synka nu</button>
-          <button type="submit" class="btn primary">Spara token</button>
-        </div>
-      </form>
-    </section>
 
     <section class="set-sec" aria-labelledby="s-wx-h" id="s-wx">
       <h3 class="label" id="s-wx-h">Väder</h3>
@@ -478,6 +464,21 @@ body.dragging,body.dragging *{cursor:grabbing!important}
       <h3 class="label" id="s-app-h">Installera som app</h3>
       <p id="inst-text"></p>
       <div class="row" id="inst-row" hidden><button type="button" class="btn primary" id="inst-btn">Installera [tomasandersson]</button></div>
+    </section>
+
+    <section class="set-sec" aria-labelledby="s-gh-h">
+      <h3 class="label" id="s-gh-h">Sparas på GitHub</h3>
+      <p class="state" id="s-state"><i class="dot"></i><span>–</span></p>
+      <form id="setform" autocomplete="off" style="display:flex;flex-direction:column;gap:10px">
+        <label for="s-token">GitHub-token</label>
+        <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
+        <p>Allt sparas i <code>data.json</code> i det privata repot <code>home-data</code>. Token behöver <b>Contents: Read and write</b> på home-data och sparas bara på den här enheten.</p>
+        <div class="row">
+          <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
+          <button type="button" class="btn outline" id="s-sync">Synka nu</button>
+          <button type="submit" class="btn primary">Spara token</button>
+        </div>
+      </form>
     </section>
   </div>
 </div>
