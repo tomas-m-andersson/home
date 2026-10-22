@@ -58,19 +58,41 @@ button,input,textarea{font:inherit;color:inherit}
 
 /* Huvud */
 header{display:flex;align-items:center;gap:8px}
-header .date{flex:1}
 #open-menu{margin-left:-8px}
-.date{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance;min-width:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
+.tools{margin-left:auto}
+
+/* Infopanel: datum, tid, väder, sol och regn */
+.info{display:flex;flex-wrap:wrap;align-items:center;column-gap:16px;row-gap:6px;min-width:0;
+  padding:9px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:13.5px;line-height:1.3}
+.info b{font-weight:600}
+.mut{color:var(--muted)}
+.i-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.i-item svg{width:17px;height:17px;flex-shrink:0;color:var(--muted)}
+.i-time{font-variant-numeric:tabular-nums;font-weight:600;letter-spacing:.01em}
+.i-wx{border:0;background:transparent;color:inherit;font:inherit;padding:3px 6px;margin:-3px -6px;border-radius:7px;cursor:pointer}
+.i-wx:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.i-wx svg{color:var(--ink)}
+.i-sep{width:1px;height:16px;background:var(--line)}
 .tools{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center}
 .icon-btn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .icon-btn svg{width:21px;height:21px}
-.sync{height:40px;border:0;background:transparent;cursor:pointer;padding:0 8px;border-radius:10px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.sync{width:40px;height:40px;border:0;background:transparent;cursor:pointer;padding:0;border-radius:10px;display:grid;place-items:center}
 .sync:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .ok .dot{background:var(--accent)} .busy .dot{background:var(--warn)} .err .dot{background:var(--danger)}
-.sync.err span{color:var(--danger)}
-@media (max-width:560px){.sync span{display:none}.sync{padding:0 14px}}
+@media (max-width:600px){
+  header{flex-wrap:wrap;row-gap:10px}
+  .info{order:3;flex-basis:100%;column-gap:14px}
+  .i-sep{display:none}
+}
+.results{display:flex;flex-direction:column;gap:2px}
+.results button{text-align:left;border:0;background:transparent;border-radius:8px;padding:8px 10px;cursor:pointer}
+.results button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.results small{color:var(--muted)}
+.wxrow{display:flex;gap:8px}
+.wxrow input{flex:1;min-width:0;font-family:var(--f-body)!important}
 
 /* Snabbanteckning */
 .quick{max-width:600px;width:100%;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
@@ -266,9 +288,17 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
     <button class="icon-btn" id="open-menu" type="button" aria-label="Öppna menyn" aria-controls="menu" aria-expanded="false" title="Meny">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
     </button>
-    <h1 class="date"><span id="today">Idag</span></h1>
+    <h1 class="sr">Vardagssidan</h1>
+    <div class="info" id="info" aria-label="Idag">
+      <span class="i-item"><b id="i-day">Idag</b><span class="mut" id="i-week"></span></span>
+      <span class="i-item i-time" id="i-time">--:--</span>
+      <i class="i-sep" aria-hidden="true"></i>
+      <button class="i-item i-wx" id="i-wx" type="button" title="Väder – tryck för att byta ort"><span id="i-wx-ico"></span><b id="i-temp"></b><span class="mut" id="i-desc">Lägg till väder</span></button>
+      <span class="i-item mut" id="i-sun" hidden></span>
+      <span class="i-item mut" id="i-rain" hidden></span>
+    </div>
     <div class="tools">
-      <button class="sync" id="sync" type="button" title="Visa sparstatus"><i class="dot"></i><span>Ansluter…</span></button>
+      <button class="sync" id="sync" type="button" title="Ansluter…"><i class="dot"></i><span class="sr">Ansluter…</span></button>
       <button class="icon-btn" id="open-settings" type="button" aria-label="Inställningar" title="Inställningar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
       </button>
@@ -367,6 +397,18 @@ body.menu-open .drawer{transform:none;visibility:visible;transition:transform .2
       </form>
     </section>
 
+    <section class="set-sec" aria-labelledby="s-wx-h" id="s-wx">
+      <h3 class="label" id="s-wx-h">Väder</h3>
+      <p class="state"><span id="wx-place">Ingen ort vald.</span></p>
+      <form class="wxrow" id="wxform" autocomplete="off">
+        <input id="wx-q" placeholder="Sök ort, t.ex. Uppsala" aria-label="Sök ort">
+        <button class="btn outline" type="submit">Sök</button>
+      </form>
+      <div class="results" id="wx-results"></div>
+      <div class="row" style="justify-content:flex-start"><button class="btn outline" id="wx-geo" type="button">Använd min position</button></div>
+      <p>Vädret kommer från Open-Meteo. Orten sparas bara på den här enheten.</p>
+    </section>
+
     <section class="set-sec" aria-labelledby="s-app-h">
       <h3 class="label" id="s-app-h">Installera som app</h3>
       <p id="inst-text"></p>
@@ -391,13 +433,17 @@ let pending=[];         // ändringar som inte är sparade på GitHub än
 let syncing=false, syncAgain=false, timer=null, editing=null;
 let drag=null, needRender=false, suppressClick=0;
 
-// ---------- Datum ----------
-function setDate(){
+// ---------- Infopanel: datum, tid, vecka ----------
+function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);const y0=new Date(Date.UTC(t.getUTCFullYear(),0,1));return Math.ceil(((t-y0)/864e5+1)/7)}
+function hhmm(d){return d.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"})}
+function tick(){
   const d=new Date();
   const t=d.toLocaleDateString("sv-SE",{weekday:"long",day:"numeric",month:"long"});
-  $("today").textContent=t.charAt(0).toUpperCase()+t.slice(1);
+  $("i-day").textContent=t.charAt(0).toUpperCase()+t.slice(1);
+  $("i-week").textContent="v. "+isoWeek(d);
+  $("i-time").textContent=hhmm(d);
+  if(typeof renderWxExtras==="function")renderWxExtras();
 }
-setDate(); setInterval(setDate,60000);
 
 // ---------- Lokalt minne ----------
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
@@ -405,6 +451,8 @@ function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(
 function token(){return (lsGet(K_TOKEN)||"").trim()}
 function saveLocal(){lsSet(K_CACHE,JSON.stringify(items));lsSet(K_PENDING,JSON.stringify(pending))}
 function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+tick();setInterval(tick,15000);
 
 // ---------- Tema ----------
 const darkMQ=window.matchMedia("(prefers-color-scheme: dark)");
@@ -465,7 +513,7 @@ async function ghPut(file,sha){
 }
 function status(kind,text){
   for(const el of [$("sync"),$("s-state")]){el.classList.remove("ok","busy","err");el.classList.add(kind);el.querySelector("span").textContent=text}
-  $("sync").title=text;
+  $("sync").title=text;$("sync").setAttribute("aria-label","Sparstatus: "+text);
 }
 function errText(st){
   if(st===401)return "Token fungerar inte – byt token";
@@ -988,6 +1036,124 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=
 window.addEventListener("appinstalled",()=>{installEvt=null;updateInstall();toast("Vardagssidan är installerad")});
 $("inst-btn").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(_){}installEvt=null;updateInstall()};
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+
+// ---------- Väder (Open-Meteo, ingen nyckel behövs) ----------
+const K_PLACE="vardagssidan.place", K_WX="vardagssidan.wx";
+const WX_ICO={
+  sun:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>',
+  moon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
+  partly:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3.5v1.5M3.5 8H5M4.8 4.8l1 1M12.2 4.8l-1 1"/><path d="M5.3 10.5A3.5 3.5 0 0 1 11.6 7"/><path d="M8.5 19h9a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.6 1A3 3 0 0 0 8.5 19z"/></svg>',
+  cloud:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M7 18.5h10.5a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.4A3.3 3.3 0 0 0 7 18.5z"/></svg>',
+  fog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 9h16M3 13h18M5 17h14"/></svg>',
+  rain:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14.5h10.5a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.4A3.3 3.3 0 0 0 7 14.5z"/><path d="M9 17.5l-1 2.5M13 17.5l-1 2.5M17 17.5l-1 2.5"/></svg>',
+  snow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14.5h10.5a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.4A3.3 3.3 0 0 0 7 14.5z"/><path d="M9 18v.01M13 19v.01M17 18v.01M11 21v.01M15 21v.01"/></svg>',
+  storm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14.5h10.5a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.4A3.3 3.3 0 0 0 7 14.5z"/><path d="M12.5 15l-2 3.5h3l-2 3.5"/></svg>',
+  sunset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 16a5 5 0 0 1 10 0M3 19h18M12 4v5M9.5 6.5L12 9l2.5-2.5"/></svg>',
+  sunrise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 16a5 5 0 0 1 10 0M3 19h18M12 9V4M9.5 6.5L12 4l2.5 2.5"/></svg>',
+  umbrella:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 18 0zM12 12v6.5a2 2 0 0 1-4 0"/><path d="M12 3v0"/></svg>'
+};
+function wxKind(code,day){
+  if(code===0)return [day?"sun":"moon","Klart"];
+  if(code===1)return [day?"partly":"moon","Mest klart"];
+  if(code===2)return ["partly","Halvklart"];
+  if(code===3)return ["cloud","Mulet"];
+  if(code===45||code===48)return ["fog","Dimma"];
+  if(code>=51&&code<=57)return ["rain","Duggregn"];
+  if(code>=61&&code<=67)return ["rain","Regn"];
+  if(code>=71&&code<=77)return ["snow","Snö"];
+  if(code>=80&&code<=82)return ["rain","Regnskurar"];
+  if(code===85||code===86)return ["snow","Snöbyar"];
+  if(code>=95)return ["storm","Åska"];
+  return ["cloud",""];
+}
+function getPlace(){try{return JSON.parse(lsGet(K_PLACE)||"null")}catch(e){return null}}
+function getWx(){try{return JSON.parse(lsGet(K_WX)||"null")}catch(e){return null}}
+function localHourKey(d){const p=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":00"}
+function showWx(){
+  const p=getPlace(),w=getWx();
+  if(!p||!w||!w.data||!w.data.current){
+    $("i-wx-ico").innerHTML=WX_ICO.partly;$("i-temp").textContent="";
+    $("i-desc").textContent=p?"Hämtar väder…":"Lägg till väder";
+    renderWxExtras();return;
+  }
+  const c=w.data.current;const [k,txt]=wxKind(c.weather_code,c.is_day===1);
+  $("i-wx-ico").innerHTML=WX_ICO[k];
+  $("i-temp").textContent=Math.round(c.temperature_2m)+"°";
+  $("i-desc").textContent=txt;
+  const d=w.data.daily;
+  $("i-wx").title=p.name+": "+txt+", "+Math.round(c.temperature_2m)+"° (känns som "+Math.round(c.apparent_temperature)+"°), vind "+Math.round(c.wind_speed_10m)+" m/s"+(d?". Idag "+Math.round(d.temperature_2m_min[0])+"° till "+Math.round(d.temperature_2m_max[0])+"°.":"")+" Tryck för att byta ort.";
+  renderWxExtras();
+}
+function renderWxExtras(){
+  const w=getWx(),sun=$("i-sun"),rain=$("i-rain");
+  if(!sun)return;
+  if(!getPlace()||!w||!w.data||!w.data.daily){sun.hidden=true;rain.hidden=true;return}
+  const now=new Date(),d=w.data.daily;
+  // Sol: nästa soluppgång eller solnedgång
+  const rise0=new Date(d.sunrise[0]),set0=new Date(d.sunset[0]);
+  let ico,txt;
+  if(now<rise0){ico="sunrise";txt="Sol upp "+hhmm(rise0)}
+  else if(now<set0){ico="sunset";txt="Sol ner "+hhmm(set0)}
+  else if(d.sunrise[1]){ico="sunrise";txt="Sol upp "+hhmm(new Date(d.sunrise[1]))}
+  if(txt){sun.innerHTML=WX_ICO[ico];sun.append(txt);sun.hidden=false}else sun.hidden=true;
+  // Regn: första timmen de närmaste 12 timmarna med minst 50 % risk
+  const h=w.data.hourly;rain.hidden=true;
+  if(h&&h.time){
+    const key=localHourKey(now);let i=h.time.indexOf(key);
+    if(i>=0){
+      const curWet=/rain|snow|storm/.test(wxKind(w.data.current.weather_code,true)[0]);
+      for(let j=i;j<Math.min(h.time.length,i+12);j++){
+        if((h.precipitation_probability[j]||0)>=50){
+          if(j===i&&curWet)break;
+          rain.innerHTML=WX_ICO.umbrella;
+          rain.append(j===i?"Regn nu":"Regn ca "+h.time[j].slice(11,16));
+          rain.hidden=false;break;
+        }
+      }
+    }
+  }
+}
+async function loadWx(force){
+  const p=getPlace();showWx();
+  if(!p)return;
+  const w=getWx();
+  if(!force&&w&&w.place===p.name&&Date.now()-w.t<10*60*1000)return;
+  const url="https://api.open-meteo.com/v1/forecast?latitude="+p.lat+"&longitude="+p.lon+
+    "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day"+
+    "&hourly=precipitation_probability&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min"+
+    "&timezone=auto&forecast_days=2&wind_speed_unit=ms";
+  try{
+    const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw r.status;
+    lsSet(K_WX,JSON.stringify({t:Date.now(),place:p.name,data:await r.json()}));
+  }catch(e){if(!getWx())$("i-desc").textContent="Väder saknas";return}
+  showWx();
+}
+function setPlace(p){lsSet(K_PLACE,JSON.stringify(p));lsSet(K_WX,null);$("wx-place").textContent="Ort: "+p.name;$("wx-results").replaceChildren();loadWx(true);toast("Väder för "+p.name)}
+$("wxform").addEventListener("submit",async e=>{
+  e.preventDefault();const q=$("wx-q").value.trim();if(!q)return;
+  const box=$("wx-results");box.replaceChildren(el("p",{class:"hint"},"Söker…"));
+  try{
+    const r=await fetch("https://geocoding-api.open-meteo.com/v1/search?count=6&language=sv&format=json&name="+encodeURIComponent(q));
+    const j=await r.json();const res=j.results||[];
+    if(!res.length){box.replaceChildren(el("p",{class:"hint err"},"Hittade ingen ort som heter så. Prova en annan stavning eller en större ort i närheten."));return}
+    box.replaceChildren(...res.map(x=>el("button",{type:"button",onclick:()=>{$("wx-q").value="";setPlace({name:x.name,lat:x.latitude,lon:x.longitude})}},
+      x.name+" ",el("small",{},[x.admin1,x.country].filter(Boolean).join(", ")))));
+  }catch(_){box.replaceChildren(el("p",{class:"hint err"},"Kunde inte söka just nu. Kontrollera nätet och försök igen."))}
+});
+$("wx-geo").onclick=()=>{
+  if(!navigator.geolocation){toast("Den här enheten kan inte dela position");return}
+  $("wx-place").textContent="Hämtar din position…";
+  navigator.geolocation.getCurrentPosition(
+    pos=>setPlace({name:"Din position",lat:+pos.coords.latitude.toFixed(3),lon:+pos.coords.longitude.toFixed(3)}),
+    ()=>{const p=getPlace();$("wx-place").textContent=p?"Ort: "+p.name:"Ingen ort vald.";toast("Fick inte använda positionen. Sök på en ort i stället.")},
+    {timeout:10000,maximumAge:600000});
+};
+$("i-wx").onclick=()=>{openSettings();setTimeout(()=>$("s-wx").scrollIntoView({block:"start",behavior:"smooth"}),60)};
+{const p=getPlace();$("wx-place").textContent=p?"Ort: "+p.name:"Ingen ort vald."}
+loadWx();
+setInterval(()=>{if(document.visibilityState==="visible")loadWx()},15*60*1000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){tick();loadWx()}});
 
 // ---------- Start ----------
 try{items=JSON.parse(lsGet(K_CACHE)||"null")||{}}catch(e){items={}}
