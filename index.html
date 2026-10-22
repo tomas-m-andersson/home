@@ -354,7 +354,9 @@ button.dtg:hover{background:var(--bg)}
 .dtg-bar{display:block;height:6px;border-radius:999px;background:color-mix(in srgb,var(--ink) 8%,transparent);overflow:hidden}
 .dtg-bar i{display:block;height:100%;border-radius:999px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
-.card .acts{flex-wrap:wrap}
+.card .acts{flex-wrap:nowrap;align-items:flex-start}
+.card .acts .tags{flex:1;min-width:0;justify-content:flex-end;align-content:flex-start;padding-top:5px}
+.tag.more{background:transparent;color:var(--muted);cursor:default}
 .tag{border:0;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font:inherit;font-size:12.5px;font-weight:600;padding:4px 9px;border-radius:999px;cursor:pointer;position:relative;z-index:1;line-height:1.3}
 .tag:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
 .tag.on{background:var(--accent);color:var(--accent-ink)}
@@ -1981,6 +1983,16 @@ function renderPage(force){
   if(tagFilter)cards.unshift(el("div",{class:"tagbar"},el("span",{},"Visar projekt med ",el("b",{},"#"+tagFilter)," ("+shown.length+")"),el("button",{class:"btn",type:"button",onclick:()=>{tagFilter=null;renderPage(true)}},"Visa alla")));
   $("sec-dash").replaceChildren(...(projSection()&&projSection()[0]===sid?dashNodes():[]));
   setTimeout(()=>{
+    // Taggarna får plats på högst två rader till höger om knapparna – resten blir "+N"
+    document.querySelectorAll("#sec-cards .acts .tags").forEach(box=>{
+      const chips=[...box.querySelectorAll(".tag:not(.more)")];if(!chips.length)return;
+      const lim=chips[0].offsetHeight*2+6+1;let hidden=0,more=null;
+      while(box.scrollHeight>lim+5&&hidden<chips.length-1){
+        chips[chips.length-1-hidden].hidden=true;hidden++;
+        if(!more){more=el("span",{class:"tag more"});box.append(more)}
+        more.textContent="+"+hidden;more.title=chips.slice(chips.length-hidden).map(c=>c.textContent).join(" ");
+      }
+    });
     hydrateImgs($("view-section"));
     // Gör "+ Lägg till" lika hög som ett ihopfällt projektkort
     const add=document.querySelector("#sec-cards .card-add"),ref=document.querySelector("#sec-cards .card:not(.card-add):not(.open)");
