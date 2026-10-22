@@ -287,6 +287,11 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .repo small{color:var(--muted);display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .repo>span{min-width:0;flex:1}
 
+.chip-btn{background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:12px;font-weight:600}
+.chip-btn:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
+.flab{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.flab input{font-weight:400;color:var(--ink)}
+
 /* Snabbpanel för ett projekt */
 .ppanel{position:sticky;top:0;align-self:flex-start;height:100vh;width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);
   overflow-y:auto;padding:22px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;z-index:29}
@@ -817,6 +822,7 @@ function render(){renderNotes();renderLinks();renderSide();renderPage();renderPa
 
 // ---------- Sektioner (Projekt + egna) ----------
 let route=decodeURIComponent(location.hash.slice(1));
+let nextSecAdd=null;
 let secEdit=false, secAdd=false, menuNewSec=false, pageDirty=false, repoCache=null, repoErr="", repoOpen=false;
 const ICO_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>';
 const ICO_CODE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg>';
@@ -837,7 +843,7 @@ function go(id){
 }
 function onRoute(){
   route=decodeURIComponent(location.hash.slice(1));
-  secEdit=false;secAdd=false;repoOpen=false;
+  secEdit=false;secAdd=nextSecAdd||false;nextSecAdd=null;repoOpen=false;
   renderPage(true);renderSide();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",onRoute);
@@ -858,6 +864,7 @@ const I_PLUS=SVG('<path d="M12 5v14M5 12h14"/>');
 const I_CHEV=SVG('<path d="M9 6l6 6-6 6"/>',' class="chev"');
 const I_GEAR=SVG('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>');
 const I_EXT=SVG('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
+const I_PEN=SVG('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>');
 const I_COPY=SVG('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>');
 function html(tag,attrs,svg,...kids){const e=el(tag,attrs);if(svg)e.insertAdjacentHTML("beforeend",svg);for(const k of kids)if(k!=null)e.append(k);return e}
 function isMobile(){return !deskMQ.matches}
@@ -909,7 +916,7 @@ function renderSide(){
   if(ps){
     const [psid,psec]=ps;
     kids.push(el("div",{class:"grp"},el("h2",{class:"label grp-title"},psec.title||"Projekt"),
-      html("button",{class:"s-mini",type:"button","aria-label":"Lägg till projekt","data-tip":"Lägg till projekt",onclick:()=>{closeMenu();go(psid);secAdd=true;renderPage(true);setTimeout(()=>{const x=$("m-name");if(x)x.focus()},40)}},I_PLUS)));
+      html("button",{class:"s-mini",type:"button","aria-label":"Lägg till projekt","data-tip":"Lägg till projekt",onclick:()=>{closeMenu();nextSecAdd=true;go(psid);focusForm()}},I_PLUS)));
     (psec.items||[]).forEach(it=>{
       const on=!!(panelItem&&panelItem.iid===it.id);
       kids.push(html("button",{class:"s-item p-item",type:"button","data-tip":it.name,"aria-pressed":String(on),onclick:()=>on?closePanel():openPanel(psid,it.id)},null,
@@ -972,6 +979,7 @@ function renderPanel(){
     const link=it.site||it.url;
     try{await navigator.clipboard.writeText(link);toast("Länken är kopierad")}catch(_){toast(link)}
   }},I_COPY,el("span",{class:"lbl"},"Kopiera länken")));
+  acts.append(html("button",{class:"s-item",type:"button",onclick:()=>{const sid=f.sid;closePanel();nextSecAdd=it.id;go(sid);focusForm()}},I_PEN,el("span",{class:"lbl"},"Ändra projektet")));
   kids.push(acts);
   if(repo){
     const c=commitCache[repo];
@@ -1016,35 +1024,60 @@ function card(sid,sec,it){
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(it.url))));
   const c=el("article",{class:"card"},top);
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
-  if(it.site)c.append(el("div",{class:"acts"},el("a",{class:"chip",href:it.site,target:"_blank",rel:"noopener",title:it.site},"Öppna sidan")));
+  const acts=el("div",{class:"acts"});
+  if(it.site)acts.append(el("a",{class:"chip",href:it.site,target:"_blank",rel:"noopener",title:it.site},"Öppna sidan"));
+  acts.append(el("button",{class:"chip chip-btn",type:"button","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}},"Ändra"));
+  c.append(acts);
   if(secEdit)c.append(el("button",{class:"xs",type:"button","aria-label":"Ta bort "+it.name,onclick:()=>{
     const before={...sec};saveSection(sid,{...sec,items:sec.items.filter(x=>x.id!==it.id)});toast("Länken togs bort",()=>saveSection(sid,before));
   }},"×"));
   return c;
 }
+function focusForm(){setTimeout(()=>{const x=$("m-name");if(x){x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},60)}
+function normUrl(u){u=(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);if(!x.hostname.includes("."))return null}catch(_){return null}return u}
 function addForm(sid,sec){
+  const editId=typeof secAdd==="string"?secAdd:null;
+  const old=editId?(sec.items||[]).find(x=>x.id===editId):null;
   const f=el("form",{class:"mform",autocomplete:"off"});
-  const name=el("input",{id:"m-name",placeholder:"Namn, t.ex. Veckomeny","aria-label":"Namn"});
-  const url=el("input",{id:"m-url",placeholder:"Adress, t.ex. github.com/…","aria-label":"Adress",inputmode:"url",autocapitalize:"off"});
-  const desc=el("input",{id:"m-desc",placeholder:"Kort beskrivning (frivilligt)","aria-label":"Beskrivning"});
+  if(old)f.append(el("p",{class:"label",style:"margin:2px 0 4px"},"Ändra ”"+old.name+"”"));
+  const lab=(t,inp)=>el("label",{class:"flab"},el("span",{},t),inp);
+  const name=el("input",{id:"m-name",placeholder:"t.ex. Veckomeny"});
+  const url=el("input",{id:"m-url",placeholder:"t.ex. github.com/tomas-m-andersson/veckomeny",inputmode:"url",autocapitalize:"off"});
+  const site=el("input",{id:"m-site",placeholder:"t.ex. tomas-m-andersson.github.io/veckomeny",inputmode:"url",autocapitalize:"off"});
+  const desc=el("input",{id:"m-desc",placeholder:"Vad är det här?"});
+  if(old){name.value=old.name||"";url.value=old.url||"";site.value=old.site||"";desc.value=old.desc||""}
   const hint=el("p",{class:"hint"},"Du behöver inte skriva https://.");
-  f.append(name,url,desc,hint,el("div",{class:"row"},
+  f.append(lab("Namn",name),lab("Adress",url),lab("Webbsida (frivilligt) – ger knappen ”Öppna sidan”",site),lab("Beskrivning (frivilligt)",desc),hint);
+  const cancel=()=>{secAdd=false;repoOpen=false;renderPage(true)};
+  if(old)f.append(el("div",{class:"row"},
+    el("button",{class:"btn primary",type:"submit"},"Spara ändringar"),
+    el("button",{class:"btn",type:"button",onclick:cancel},"Avbryt"),
+    el("button",{class:"btn danger",type:"button",style:"margin-left:auto",onclick:()=>{
+      const cur=getSection(sid)||sec;const before={...cur};
+      secAdd=false;saveSection(sid,{...cur,items:(cur.items||[]).filter(x=>x.id!==old.id)});renderPage(true);
+      toast("”"+old.name+"” togs bort",()=>saveSection(sid,before));
+    }},"Ta bort")));
+  else f.append(el("div",{class:"row"},
     el("button",{class:"btn primary",type:"submit"},"Lägg till"),
-    el("button",{class:"btn",type:"button",onclick:()=>{secAdd=false;repoOpen=false;renderPage(true)}},"Avbryt"),
+    el("button",{class:"btn",type:"button",onclick:cancel},"Avbryt"),
     el("button",{class:"btn outline",type:"button",onclick:loadRepos},"Välj från GitHub")));
   f.addEventListener("submit",e=>{
     e.preventDefault();
-    let n=name.value.trim(),u=url.value.trim(),d=desc.value.trim();
-    if(!u){hint.className="hint err";hint.textContent="Skriv in en adress.";url.focus();return}
-    if(!/^https?:\/\//i.test(u))u="https://"+u;
-    try{const x=new URL(u);if(!x.hostname.includes("."))throw 0}catch(_){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut.";url.focus();return}
+    let n=name.value.trim(),d=desc.value.trim();
+    const u=normUrl(url.value),st=normUrl(site.value);
+    if(!url.value.trim()){hint.className="hint err";hint.textContent="Skriv in en adress.";url.focus();return}
+    if(u===null){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut.";url.focus();return}
+    if(st===null){hint.className="hint err";hint.textContent="Webbsidans adress ser inte rätt ut. Lämna rutan tom om projektet inte har någon.";site.focus();return}
     if(!n)n=host(u);
-    const item={id:uid("i_"),name:n,url:u};if(d)item.desc=d;
+    const item={id:old?old.id:uid("i_"),name:n,url:u};if(st)item.site=st;if(d)item.desc=d;
     document.activeElement&&document.activeElement.blur();
     secAdd=false;repoOpen=false;
-    saveSection(sid,{...sec,items:[...(sec.items||[]),item]});
+    const cur=getSection(sid)||sec;
+    if(old){saveSection(sid,{...cur,items:(cur.items||[]).map(x=>x.id===old.id?item:x)});toast("Ändringarna är sparade")}
+    else saveSection(sid,{...cur,items:[...(cur.items||[]),item]});
     renderPage(true);
   });
+  if(old)return f;
   if(repoOpen){
     const box=el("div",{class:"repos"});
     if(repoErr)box.append(el("p",{class:"hint err"},repoErr));
@@ -1103,7 +1136,7 @@ function renderPage(force){
     bar.hidden=false;
   }else{bar.hidden=true;bar.replaceChildren()}
   const cards=list.map(it=>card(sid,sec,it));
-  if(!secAdd)cards.push(el("button",{class:"card card-add",type:"button",onclick:()=>{secAdd=true;repoOpen=false;renderPage(true);setTimeout(()=>{const x=$("m-name");if(x){x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},30)}},"+ Lägg till"));
+  if(secAdd!==true)cards.push(el("button",{class:"card card-add",type:"button",onclick:()=>{secAdd=true;repoOpen=false;renderPage(true);focusForm()}},"+ Lägg till"));
   $("sec-cards").replaceChildren(...cards);
   $("sec-form").replaceChildren(...(secAdd?[addForm(sid,sec)]:list.length?[]:[el("p",{class:"sec-empty"},sid==="s_projekt"?"Inga projekt än. Tryck på ”+ Lägg till” och sedan ”Välj från GitHub”.":"Inga länkar än.")]));
 }
