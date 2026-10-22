@@ -164,7 +164,8 @@ header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:var(--col
 .note.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;box-shadow:var(--lift);cursor:grabbing;margin:0}
 .note.press{transform:scale(.98);transition:transform .3s}
 body.dragging,body.dragging *{cursor:grabbing!important}
-.pin{position:absolute;top:6px;right:6px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.note>:first-child{padding-right:30px}
+.pin{position:absolute;top:6px;right:6px;z-index:1;width:34px;height:34px;border:0;border-radius:50%;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center}
 .pin:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .pin[aria-pressed="true"]{color:var(--ink)}
 .subhead{margin:4px 0 10px}
