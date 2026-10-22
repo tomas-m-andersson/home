@@ -60,7 +60,8 @@ button,input,textarea{font:inherit;color:inherit}
 /* Huvud */
 header{display:flex;align-items:flex-start;gap:8px 16px;flex-wrap:wrap}
 header>#open-menu,header>.tools{align-self:center}
-header .quick{margin:0;flex:1 1 320px;max-width:640px;width:auto}
+/* Infopanel och anteckningsruta: under varandra, samma vänsterkant och samma bredd */
+header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:680px}
 .quick textarea{min-height:48px}
 #open-menu{margin-left:-8px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
@@ -90,6 +91,7 @@ header .quick{margin:0;flex:1 1 320px;max-width:640px;width:auto}
   header{flex-wrap:wrap;row-gap:10px}
   .info{order:3;flex-basis:100%;column-gap:14px}
   header .quick{order:4;flex-basis:100%;max-width:none}
+  header .info{max-width:none}
   .i-sep{display:none}
 }
 .results{display:flex;flex-direction:column;gap:2px}
