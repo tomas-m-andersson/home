@@ -1244,7 +1244,9 @@ function card(sid,sec,it){
   }},"×"));
   return c;
 }
-function focusForm(){setTimeout(()=>{const x=$("m-name");if(x){x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},60)}
+const touchUI=()=>matchMedia("(pointer:coarse)").matches;
+// På mobilen flyttas bara formuläret fram – tangentbordet öppnas först när du trycker i ett fält
+function focusForm(){setTimeout(()=>{const x=$("m-name");if(!x)return;if(touchUI())x.closest("form").scrollIntoView({block:"start",behavior:"smooth"});else{x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},60)}
 function normUrl(u){u=(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);if(!x.hostname.includes("."))return null}catch(_){return null}return u}
 let formFor=null,formImgs=[],formUploaded=[],formBusy=0;
 function addForm(sid,sec){
@@ -1471,7 +1473,7 @@ function openLinkForm(id){
   $("l-name").value=v?v.name:"";$("l-url").value=v?v.url:"";
   $("l-submit").textContent=v?"Spara ändringar":"Lägg till";
   $("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent=v?"Ändrar ”"+v.name+"”. Du behöver inte skriva https://.":"Du behöver inte skriva https:// – det läggs till automatiskt.";
-  $("l-name").focus();$("linkform").scrollIntoView({block:"nearest",behavior:"smooth"});
+  if(!touchUI())$("l-name").focus();$("linkform").scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 $("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset();editLinkId=null};
 $("linkform").addEventListener("submit",e=>{
