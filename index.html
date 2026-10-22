@@ -178,10 +178,10 @@ section h2{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spa
 <div class="scrim" id="set-scrim" hidden>
   <form class="dialog settings" id="setform" autocomplete="off">
     <h2>Spara på GitHub</h2>
-    <p>Anteckningar och länkar sparas i filen <code>data.json</code> i repot <code>tomas-m-andersson/home</code>. För att få skriva dit behöver sidan en GitHub-token.</p>
+    <p>Anteckningar och länkar sparas i filen <code>data.json</code> i repot <code>tomas-m-andersson/home-data</code> (privat). För att läsa och spara behöver sidan en GitHub-token.</p>
     <label for="s-token">GitHub-token</label>
     <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false">
-    <p id="s-info">Token sparas bara i den här webbläsaren. Lägg in den på varje dator och mobil du använder.</p>
+    <p id="s-info">Token behöver <b>Contents: Read and write</b> på repot home-data. Den sparas bara i den här webbläsaren. Lägg in den på varje dator och mobil du använder.</p>
     <div class="row">
       <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
       <button type="button" class="btn" id="s-cancel">Stäng</button>
@@ -197,7 +197,7 @@ const $=s=>document.getElementById(s);
 const COLORS=["plain","sand","sage","sky","rose","butter"];
 const COLOR_NAMES={plain:"Vit",sand:"Sand",sage:"Salvia",sky:"Himmel",rose:"Rosa",butter:"Smör"};
 const MONO=["#126B5F","#2F5D8A","#8A5A2F","#6B7A2A","#9A3F4B","#3E4A47","#B0662A","#2E7A8C"];
-const GH={owner:"tomas-m-andersson",repo:"home",path:"data.json",branch:"main"};
+const GH={owner:"tomas-m-andersson",repo:"home-data",path:"data.json",branch:"main"};
 const API="https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/contents/"+GH.path;
 const K_TOKEN="vardagssidan.token", K_CACHE="vardagssidan.cache", K_PENDING="vardagssidan.pending";
 let items={};           // id -> data
@@ -243,7 +243,12 @@ function b64enc(str){const by=new TextEncoder().encode(str);let bin="";for(let i
 function headers(){const h={"Accept":"application/vnd.github+json"};if(token())h.Authorization="Bearer "+token();return h}
 async function ghGet(){
   const r=await fetch(API+"?ref="+GH.branch+"&_="+Date.now(),{headers:headers(),cache:"no-store"});
-  if(r.status===404)return {file:null,sha:null};
+  if(r.status===404){
+    // Privat repo: 404 betyder antingen "filen finns inte än" eller "token saknar åtkomst"
+    const repo=await fetch("https://api.github.com/repos/"+GH.owner+"/"+GH.repo,{headers:headers(),cache:"no-store"});
+    if(repo.ok)return {file:null,sha:null};
+    throw {status:404};
+  }
   if(!r.ok)throw {status:r.status};
   const j=await r.json();
   return {file:JSON.parse(b64dec(j.content)),sha:j.sha};
@@ -256,11 +261,15 @@ async function ghPut(file,sha){
 function status(kind,text){const s=$("sync");s.className="sync "+kind;s.querySelector("span").textContent=text}
 function errText(st){
   if(st===401)return "Token fungerar inte – öppna Inställningar";
-  if(st===403||st===404)return "Token saknar skrivrätt till repot home";
+  if(st===403||st===404)return "Token saknar åtkomst till repot home-data";
   return "Kunde inte nå GitHub – försöker igen";
 }
 async function sync(){
   if(syncing){syncAgain=true;return}
+  if(!token()){
+    status("err",pending.length?"Ej sparat – lägg in token":"Lägg in token för att se dina anteckningar");
+    return;
+  }
   syncing=true;
   try{
     for(let attempt=0;attempt<3;attempt++){
