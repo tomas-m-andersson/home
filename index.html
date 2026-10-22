@@ -964,6 +964,48 @@ function renderSide(){
   side.replaceChildren(...kids);
 }
 
+// Svep för att öppna/stänga menyn på mobilen: dra med fingret från vänster mot höger
+(function(){
+  let mode=null,sx=0,sy=0,st=0,dx=0,w=0;
+  const side=$("side"),scrim=$("menu-scrim");
+  const blocked=()=>deskMQ.matches||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
+  function reset(){side.style.transition="";side.style.transform="";side.style.visibility="";scrim.style.opacity="";scrim.style.transition=""}
+  document.addEventListener("touchstart",e=>{
+    mode=null;
+    if(e.touches.length!==1||blocked())return;
+    const t=e.touches[0];sx=t.clientX;sy=t.clientY;st=Date.now();dx=0;
+    const isOpen=document.body.classList.contains("menu-open");
+    if(isOpen)mode="maybe-close";
+    else if(sx<innerWidth*0.6)mode="maybe-open";
+  },{passive:true});
+  document.addEventListener("touchmove",e=>{
+    if(!mode||e.touches.length!==1)return;
+    if(drag&&drag.active){mode=null;reset();return}
+    const t=e.touches[0];dx=t.clientX-sx;const dy=t.clientY-sy;
+    if(mode.startsWith("maybe")){
+      if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+      if(Math.abs(dy)>Math.abs(dx)*0.8||(mode==="maybe-open"&&dx<0)||(mode==="maybe-close"&&dx>0)){mode=null;return}
+      mode=mode==="maybe-open"?"open":"close";
+      w=side.offsetWidth;side.style.transition="none";side.style.visibility="visible";
+      scrim.hidden=false;scrim.style.transition="none";hideTip();
+    }
+    const x=mode==="open"?Math.min(0,-w+dx):Math.min(0,dx);
+    side.style.transform="translateX("+x+"px)";
+    scrim.style.opacity=String(Math.max(0,Math.min(1,(w+x)/w)));
+    e.preventDefault();
+  },{passive:false});
+  function end(){
+    if(mode!=="open"&&mode!=="close"){mode=null;return}
+    const v=dx/Math.max(1,Date.now()-st); // px per ms
+    const doOpen=mode==="open"?(dx>w*0.35||v>0.45):!(-dx>w*0.35||v<-0.45);
+    mode=null;reset();
+    if(doOpen){if(!document.body.classList.contains("menu-open"))openMenu()}
+    else{if(document.body.classList.contains("menu-open"))closeMenu();else scrim.hidden=true}
+  }
+  document.addEventListener("touchend",end);
+  document.addEventListener("touchcancel",end);
+})();
+
 // Små namnlappar när menyn är hopfälld
 function hideTip(){$("tip").hidden=true}
 function showTip(t){
