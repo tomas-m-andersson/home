@@ -207,18 +207,23 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .back svg{width:18px;height:18px}
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .page-title{font-family:var(--f-body);font-weight:600;font-size:clamp(24px,5vw,30px);letter-spacing:0;margin:0;min-width:0;overflow-wrap:anywhere}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;align-items:start}
 .card{position:relative;display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);min-width:0}
 .card:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
-.card .top{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:var(--ink)}
-.card .top::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.card .top{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:var(--ink);border:0;background:transparent;padding:0;font:inherit;text-align:left;cursor:pointer;width:100%}
+.card.has-desc{cursor:pointer}
+.card .exp{width:18px;height:18px;margin-left:auto;color:var(--muted);flex-shrink:0;transition:transform .2s}
+.card.open .exp{transform:rotate(180deg)}
+.card .top>span:not(.mono){flex:1}
+.card .top .mono{flex-shrink:0}
 .card .name{font-weight:600;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .host{display:block;font-size:12.5px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .top>span:last-child{min-width:0}
-.card .desc{margin:0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .desc{margin:0;font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.card.open .desc{display:block;-webkit-line-clamp:unset;overflow:visible;color:var(--ink)}
 .card .acts{display:flex;gap:8px;align-items:center;margin-top:auto}
 .card .chip,.card .xs{position:relative;z-index:1}
-.card .xs{position:absolute;top:10px;right:10px}
+.card .xs{position:absolute;top:-10px;right:-10px;z-index:2}
 .card-add{border:1.5px dashed var(--line);background:transparent;box-shadow:none;align-items:center;justify-content:center;color:var(--muted);font-weight:600;cursor:pointer;min-height:96px;font-size:15px}
 .card-add:hover{color:var(--ink)}
 .sec-empty{color:var(--muted);margin:0}
@@ -297,7 +302,8 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .chip-btn{background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:12px;font-weight:600}
 .chip-btn:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
 .flab{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
-.flab input{font-weight:400;color:var(--ink)}
+.flab input,.flab textarea{font-weight:400;color:var(--ink)}
+.mform textarea{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%;min-width:0;resize:vertical;font:inherit;color:var(--ink);box-sizing:border-box}
 
 /* Snabbpanel för ett projekt */
 .ppanel{position:sticky;top:0;align-self:flex-start;height:100vh;width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);
@@ -958,6 +964,17 @@ $("side").addEventListener("scroll",hideTip);
 
 // --- Snabbpanel för ett projekt ---
 const commitCache={};
+function linkOf(it){return it.site||it.url}
+// Hittar GitHub-repot utifrån webbsidan: github.com/ägare/repo eller ägare.github.io/repo
+function repoOf(it){
+  for(const u of [it.url,it.site]){
+    if(!u)continue;
+    let m=/github\.com\/([^\/]+)\/([^\/#?]+)/i.exec(u);if(m)return m[1]+"/"+m[2].replace(/\.git$/,"");
+    m=/^https?:\/\/([^.\/]+)\.github\.io\/([^\/#?]+)/i.exec(u);if(m)return m[1]+"/"+m[2];
+    m=/^https?:\/\/([^.\/]+)\.github\.io\/?$/i.exec(u);if(m)return m[1]+"/"+m[1]+".github.io";
+  }
+  return null;
+}
 function ghRepoOf(url){const m=/github\.com\/([^\/]+)\/([^\/#?]+)/i.exec(url||"");return m?m[1]+"/"+m[2].replace(/\.git$/,""):null}
 function findItem(iid){for(const [sid,sec] of sectionList()){const it=(sec.items||[]).find(x=>x.id===iid);if(it)return {sid,sec,it}}return null}
 function openPanel(sid,iid){panelItem={sid,iid};closeMenu();hideTip();renderPanel();renderSide();const p=$("ppanel");p.scrollTop=0;if(isMobile())setTimeout(()=>{const c=p.querySelector(".pp-close");if(c)c.focus()},30)}
@@ -980,17 +997,18 @@ function renderPanel(){
   const {it}=f;
   p.hidden=false;p.setAttribute("aria-label",it.name);
   const kids=[];
-  const shown=it.site||it.url;
+  const shown=linkOf(it);
   kids.push(el("div",{class:"pp-head"},monoFor(it.name),
     el("div",{class:"pp-name"},el("h2",{},it.name),el("a",{href:shown,target:"_blank",rel:"noopener",title:shown},shown.replace(/^https?:\/\//,"").replace(/\/$/,""))),
     html("button",{class:"icon-btn pp-close",type:"button","aria-label":"Stäng panelen",onclick:closePanel},I_X)));
   if(it.desc)kids.push(el("p",{class:"pp-desc"},it.desc));
   const acts=el("div",{class:"pp-acts"});
-  if(it.site)acts.append(html("a",{class:"s-item primary",href:it.site,target:"_blank",rel:"noopener"},I_EXT,el("span",{class:"lbl"},"Öppna sidan")));
-  const repo=ghRepoOf(it.url);
-  acts.append(html("a",{class:"s-item"+(it.site?"":" primary"),href:it.url,target:"_blank",rel:"noopener"},repo?ICO_CODE:I_EXT,el("span",{class:"lbl"},repo?"Repot på GitHub":"Öppna länken")));
+  acts.append(html("a",{class:"s-item primary",href:shown,target:"_blank",rel:"noopener"},I_EXT,el("span",{class:"lbl"},"Öppna sidan")));
+  const repo=repoOf(it);
+  const repoUrl=repo?"https://github.com/"+repo:"";
+  if(repo&&repoUrl.replace(/\/$/,"")!==shown.replace(/\/$/,""))acts.append(html("a",{class:"s-item",href:repoUrl,target:"_blank",rel:"noopener"},ICO_CODE,el("span",{class:"lbl"},"Repot på GitHub")));
   acts.append(html("button",{class:"s-item",type:"button",onclick:async()=>{
-    const link=it.site||it.url;
+    const link=shown;
     try{await navigator.clipboard.writeText(link);toast("Länken är kopierad")}catch(_){toast(link)}
   }},I_COPY,el("span",{class:"lbl"},"Kopiera länken")));
   acts.append(html("button",{class:"s-item",type:"button",onclick:()=>{const sid=f.sid;closePanel();nextSecAdd=it.id;go(sid);focusForm()}},I_PEN,el("span",{class:"lbl"},"Ändra projektet")));
@@ -1033,17 +1051,23 @@ async function loadRepos(){
   }
   renderPage(true);
 }
+const openCards=new Set();
 function card(sid,sec,it){
-  const top=el("a",{class:"top",href:it.url,target:"_blank",rel:"noopener",title:it.url},monoFor(it.name),
-    el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(it.url))));
-  const c=el("article",{class:"card"},top);
+  const link=linkOf(it),open=openCards.has(it.id);
+  const toggle=()=>{if(openCards.has(it.id))openCards.delete(it.id);else openCards.add(it.id);renderPage(true)};
+  const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(it.desc?(open?", dölj beskrivningen":", visa beskrivningen"):"")},monoFor(it.name),
+    el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(link))));
+  if(it.desc)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  head.addEventListener("click",e=>{e.stopPropagation();toggle()});
+  const c=el("article",{class:"card"+(open?" open":"")+(it.desc?" has-desc":"")},head);
+  c.addEventListener("click",e=>{if(e.target.closest("a,button"))return;toggle()});
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
   const acts=el("div",{class:"acts"});
-  if(it.site)acts.append(el("a",{class:"chip",href:it.site,target:"_blank",rel:"noopener",title:it.site},"Öppna sidan"));
+  acts.append(el("a",{class:"chip",href:link,target:"_blank",rel:"noopener",title:link},"Öppna sidan"));
   acts.append(el("button",{class:"chip chip-btn",type:"button","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}},"Ändra"));
   c.append(acts);
   if(secEdit)c.append(el("button",{class:"xs",type:"button","aria-label":"Ta bort "+it.name,onclick:()=>{
-    const before={...sec};saveSection(sid,{...sec,items:sec.items.filter(x=>x.id!==it.id)});toast("Länken togs bort",()=>saveSection(sid,before));
+    const before={...sec};saveSection(sid,{...sec,items:sec.items.filter(x=>x.id!==it.id)});toast("”"+it.name+"” togs bort",()=>saveSection(sid,before));
   }},"×"));
   return c;
 }
@@ -1056,12 +1080,11 @@ function addForm(sid,sec){
   if(old)f.append(el("p",{class:"label",style:"margin:2px 0 4px"},"Ändra ”"+old.name+"”"));
   const lab=(t,inp)=>el("label",{class:"flab"},el("span",{},t),inp);
   const name=el("input",{id:"m-name",placeholder:"t.ex. Veckomeny"});
-  const url=el("input",{id:"m-url",placeholder:"t.ex. github.com/tomas-m-andersson/veckomeny",inputmode:"url",autocapitalize:"off"});
-  const site=el("input",{id:"m-site",placeholder:"t.ex. tomas-m-andersson.github.io/veckomeny",inputmode:"url",autocapitalize:"off"});
-  const desc=el("input",{id:"m-desc",placeholder:"Vad är det här?"});
-  if(old){name.value=old.name||"";url.value=old.url||"";site.value=old.site||"";desc.value=old.desc||""}
+  const url=el("input",{id:"m-url",placeholder:"t.ex. tomas-m-andersson.github.io/veckomeny",inputmode:"url",autocapitalize:"off"});
+  const desc=el("textarea",{id:"m-desc",rows:"3",placeholder:"Vad är det här? Skriv gärna lite mer – det syns när kortet fälls ut."});
+  if(old){name.value=old.name||"";url.value=linkOf(old)||"";desc.value=old.desc||""}
   const hint=el("p",{class:"hint"},"Du behöver inte skriva https://.");
-  f.append(lab("Namn",name),lab("Adress",url),lab("Webbsida (frivilligt) – ger knappen ”Öppna sidan”",site),lab("Beskrivning (frivilligt)",desc),hint);
+  f.append(lab("Namn",name),lab("Webbsida",url),lab("Beskrivning (frivilligt) – visas när du klickar på kortet",desc),hint);
   const cancel=()=>{secAdd=false;repoOpen=false;renderPage(true)};
   if(old)f.append(el("div",{class:"row"},
     el("button",{class:"btn primary",type:"submit"},"Spara ändringar"),
@@ -1078,12 +1101,11 @@ function addForm(sid,sec){
   f.addEventListener("submit",e=>{
     e.preventDefault();
     let n=name.value.trim(),d=desc.value.trim();
-    const u=normUrl(url.value),st=normUrl(site.value);
-    if(!url.value.trim()){hint.className="hint err";hint.textContent="Skriv in en adress.";url.focus();return}
-    if(u===null){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut.";url.focus();return}
-    if(st===null){hint.className="hint err";hint.textContent="Webbsidans adress ser inte rätt ut. Lämna rutan tom om projektet inte har någon.";site.focus();return}
+    const u=normUrl(url.value);
+    if(!url.value.trim()){hint.className="hint err";hint.textContent="Skriv in webbsidans adress.";url.focus();return}
+    if(u===null){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut. Prova till exempel tomas-m-andersson.github.io/veckomeny.";url.focus();return}
     if(!n)n=host(u);
-    const item={id:old?old.id:uid("i_"),name:n,url:u};if(st)item.site=st;if(d)item.desc=d;
+    const item={id:old?old.id:uid("i_"),name:n,url:u};if(d)item.desc=d;
     document.activeElement&&document.activeElement.blur();
     secAdd=false;repoOpen=false;
     const cur=getSection(sid)||sec;
@@ -1098,11 +1120,10 @@ function addForm(sid,sec){
     else if(!repoCache)box.append(el("p",{class:"hint"},"Hämtar dina projekt…"));
     else if(!repoCache.length)box.append(el("p",{class:"hint"},"Hittade inga publika projekt."));
     else repoCache.forEach(r=>{
-      const have=(sec.items||[]).some(x=>x.url===r.html_url);
+      const have=(sec.items||[]).some(x=>x.url===r.html_url||x.site===siteFor(r)&&siteFor(r)||x.url===siteFor(r)&&siteFor(r)||repoOf(x)===GH.owner+"/"+r.name);
       box.append(el("button",{class:"repo",type:"button",...(have?{disabled:""}:{}),onclick:()=>{
         const cur=getSection(sid)||sec;
-        const item={id:uid("i_"),name:r.name,url:r.html_url};
-        const site=siteFor(r);if(site)item.site=site;
+        const item={id:uid("i_"),name:r.name,url:siteFor(r)||r.html_url};
         if(r.description)item.desc=r.description;
         saveSection(sid,{...cur,items:[...(cur.items||[]),item]});
         renderPage(true);
