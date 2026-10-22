@@ -272,7 +272,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .s-mini svg{width:14px;height:14px}
 .p-item{height:40px;gap:14px}
 .collapsed .p-item{height:34px}
-.p-item[aria-pressed="true"]{background:var(--sel);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,var(--line))}
+.p-item[aria-current="page"]{background:var(--sel);font-weight:600;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,var(--line))}
 .pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .chev{width:16px;height:16px;color:var(--muted);flex-shrink:0}
 .s-div{height:1px;background:var(--line);margin:12px 4px;width:calc(100% - 8px);flex-shrink:0}
@@ -341,6 +341,81 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lb-prev{left:max(12px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
 .lb-next{right:max(12px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
 .lb-count{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
+
+/* Projektsida */
+.proj{max-width:var(--colw)}
+.pj-top{display:flex;align-items:center;gap:16px;min-width:0}
+.mono.xl{width:56px;height:56px;border-radius:14px;font-size:24px;flex-shrink:0}
+.pj-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pj-title .page-title{overflow-wrap:anywhere}
+.pj-title a{font-size:13.5px;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pj-title a:hover{text-decoration:underline}
+.pj-btns{display:flex;gap:8px;flex-shrink:0}
+.ibtn.big{width:42px;height:42px;background:var(--surface)}
+.ibtn[aria-pressed="true"]{background:var(--sel);color:var(--accent)}
+.pj-desc{margin:-8px 0 0;max-width:640px;line-height:1.55;white-space:pre-wrap}
+.pj-err{margin:0}
+.pj-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.pj-stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.pj-stat .label{font-size:11.5px}
+.pj-stat b{font-size:18px;font-weight:600;display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pj-stat b a{color:inherit;text-decoration:none}
+.pj-stat b a:hover{text-decoration:underline}
+.pj-sub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pj-stat a.pj-sub,.pj-stat .pj-sub a{color:var(--accent)}
+.pj-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+.pj-col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.pj-sec{display:flex;flex-direction:column;gap:10px;min-width:0}
+.pj-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}
+.pj-tools{display:flex;gap:6px}
+.pj-tools .s-mini[aria-pressed="true"]{background:var(--sel);color:var(--accent)}
+.pj-add{border:0;background:transparent;color:var(--accent);font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;padding:6px 4px;min-height:36px}
+.pj-add:hover{text-decoration:underline}
+.todo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px 8px;display:flex;flex-direction:column;gap:4px}
+.todo-h{display:flex;align-items:center;gap:6px;min-width:0}
+.todo-h h3{margin:0;font-size:15px;font-weight:600;flex:1;min-width:0;overflow-wrap:anywhere}
+.tt-in{flex:1;min-width:0;font:inherit;font-weight:600;font-size:15px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--bg)}
+.todo-n{font-size:12.5px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.todo-fold{width:30px;height:30px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;border-radius:7px;cursor:pointer;margin-left:-6px;flex-shrink:0}
+.todo-fold svg{width:18px;height:18px;transition:transform .2s}
+.todo.coll .todo-fold svg{transform:rotate(-90deg)}
+.todo .s-mini{width:30px;height:30px;border:0;color:var(--muted)}
+.bar{height:4px;background:color-mix(in srgb,var(--ink) 8%,transparent);border-radius:999px;margin:2px 0 4px}
+.bar i{display:block;height:4px;background:var(--accent);border-radius:999px}
+.todo-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.todo-list li{display:flex;align-items:center;gap:10px;min-height:38px}
+.todo-list input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;margin:0}
+.ti-txt{flex:1;min-width:0;text-align:left;border:0;background:transparent;font:inherit;color:var(--ink);padding:6px 0;cursor:text;overflow-wrap:anywhere}
+.ti-txt.done{color:var(--muted);text-decoration:line-through}
+.ti-in{flex:1;min-width:0;font:inherit;border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--bg)}
+.ti-x{width:30px;height:30px;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:7px;cursor:pointer;opacity:.55;flex-shrink:0}
+.ti-x:hover,.ti-x:focus-visible{opacity:1;color:var(--danger)}
+.ti-add{border:0;border-top:1px solid color-mix(in srgb,var(--ink) 8%,transparent);padding:10px 0 4px;font:inherit;background:transparent;color:var(--ink)}
+.ti-add:focus{outline:none}
+.pj-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.pj-notes .pnote{display:flex;flex-direction:column;gap:6px;padding:12px 14px}
+.pj-notes .pnote span{-webkit-line-clamp:6}
+.pj-notes .pnote time{font-size:12px;color:var(--muted)}
+.pj-more{font-size:13px;font-weight:600;color:var(--accent);text-decoration:none}
+.pj-more:hover{text-decoration:underline}
+.pj-link{display:flex;align-items:center;gap:6px}
+.pj-link>a{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:9px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.pj-link>a:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+.pj-link>a>span:last-child{min-width:0;display:flex;flex-direction:column}
+.pj-link b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+label.s-mini{cursor:pointer}
+label.s-mini:focus-within{outline:2px solid var(--focus)}
+.card.is-proj{cursor:pointer}
+@media (max-width:760px){
+  .pj-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pj-grid{grid-template-columns:minmax(0,1fr)}
+  .pj-top{flex-wrap:wrap}
+  .pj-btns{width:100%}
+  .pj-btns .ibtn.big{flex:1;width:auto;height:44px}
+  .todo-list li{min-height:46px}
+  .todo-list input[type=checkbox]{width:20px;height:20px}
+  .ti-x{width:40px;height:40px;opacity:.7}
+}
 
 /* Snabbpanel för ett projekt */
 .ppanel{position:sticky;top:0;align-self:flex-start;height:100vh;width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);
@@ -484,6 +559,8 @@ body.dragging,body.dragging *{cursor:grabbing!important}
     <div class="cards" id="sec-cards"></div>
     <div id="sec-form"></div>
   </main>
+
+  <main id="view-project" class="view proj" hidden></main>
 </div>
 </div>
 </div>
@@ -724,7 +801,7 @@ function gallery(list){
   return g;
 }
 
-let lastStatus={kind:"",text:""};
+let lastStatus={kind:"",text:""},syncedOnce=false;
 function status(kind,text){
   lastStatus={kind,text};
   const sd=$("side-set");
@@ -742,6 +819,7 @@ function show(){if(drag||editing){needRender=true}else render()}
 async function sync(){
   if(!token()){
     status("err",pending.length?"Ej sparat – lägg in token":"Lägg in token för att se dina anteckningar");
+    if(!syncedOnce){syncedOnce=true;show()}
     return;
   }
   if(syncing){syncAgain=true;return}
@@ -751,11 +829,11 @@ async function sync(){
       status("busy",pending.length?"Sparar…":"Hämtar…");
       const {file,sha}=await ghGet();
       const n=pending.length;
-      if(!n){items=toMap(file);saveLocal();show();status("ok","Sparat på GitHub");return}
+      if(!n){items=toMap(file);syncedOnce=true;saveLocal();show();status("ok","Sparat på GitHub");return}
       const merged=applyOps(toMap(file),pending.slice(0,n));
       const r=await ghPut(fromMap(merged),sha);
       if(r.ok){
-        pending.splice(0,n);
+        pending.splice(0,n);syncedOnce=true;
         items=applyOps(merged,pending);saveLocal();show();
         status("ok","Sparat på GitHub");
         if(!pending.length)return;
@@ -766,6 +844,7 @@ async function sync(){
     }
   }catch(e){
     status("err",errText(e&&e.status));
+    if(!syncedOnce&&e&&e.status&&e.status<500){syncedOnce=true;show()}
     if(!e||!e.status||e.status>=500){clearTimeout(timer);timer=setTimeout(sync,15000)}
   }finally{
     syncing=false;
@@ -988,7 +1067,7 @@ function go(id){
 }
 function onRoute(){
   route=decodeURIComponent(location.hash.slice(1));
-  secEdit=false;secAdd=nextSecAdd||false;nextSecAdd=null;repoOpen=false;
+  secEdit=false;secAdd=nextSecAdd||false;nextSecAdd=null;repoOpen=false;pjEdit={};pjLinkForm=null;
   renderPage(true);renderSide();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",onRoute);
@@ -1021,7 +1100,7 @@ function setCollapsed(v){sideCollapsed=v;lsSet(K_SIDE,v?"collapsed":null);hideTi
 if(deskMQ.addEventListener)deskMQ.addEventListener("change",()=>{closeMenu();renderSide();renderPanel()});
 function projSection(){const l=sectionList();return l.find(([k])=>k==="s_projekt")||l.find(([,v])=>(v.title||"").trim().toLowerCase()==="projekt")||null}
 function sideItem(id,label,icon,count){
-  const cur=getSection(route)?route:"";
+  const cur=getSection(route)?route:(route.startsWith("proj-")&&findItem(route.slice(5))?findItem(route.slice(5)).sid:"");
   const a=html("a",{class:"s-item",href:id?"#"+encodeURIComponent(id):"#","data-tip":label},icon,el("span",{class:"lbl"},label),count!=null?el("span",{class:"count"},String(count)):null);
   if(cur===id)a.setAttribute("aria-current","page");
   a.addEventListener("click",e=>{e.preventDefault();closeMenu();go(id)});
@@ -1064,7 +1143,8 @@ function renderSide(){
       html("button",{class:"s-mini",type:"button","aria-label":"Lägg till projekt","data-tip":"Lägg till projekt",onclick:()=>{closeMenu();nextSecAdd=true;go(psid);focusForm()}},I_PLUS)));
     (psec.items||[]).forEach(it=>{
       const on=!!(panelItem&&panelItem.iid===it.id);
-      kids.push(html("button",{class:"s-item p-item",type:"button","data-tip":it.name,"aria-pressed":String(on),onclick:()=>on?closePanel():openPanel(psid,it.id)},null,
+      const here=route==="proj-"+it.id;
+      kids.push(html("a",{class:"s-item p-item",href:"#proj-"+it.id,"data-tip":it.name,"aria-current":here?"page":"false",onclick:e=>{e.preventDefault();closeMenu();go("proj-"+it.id)}},null,
         el("span",{class:"pdot",style:"background:"+dotColor(it.name)}),el("span",{class:"lbl"},it.name),html("span",{class:"chev-wrap","aria-hidden":"true",style:"display:contents"},I_CHEV)));
     });
   }
@@ -1134,6 +1214,7 @@ const commitCache={};
 function linkOf(it){return it.site||it.url}
 // Hittar GitHub-repot utifrån webbsidan: github.com/ägare/repo eller ägare.github.io/repo
 function repoOf(it){
+  if(it.repo)return it.repo;
   for(const u of [it.url,it.site]){
     if(!u)continue;
     let m=/github\.com\/([^\/]+)\/([^\/#?]+)/i.exec(u);if(m)return m[1]+"/"+m[2].replace(/\.git$/,"");
@@ -1202,6 +1283,251 @@ function renderPanel(){
   p.replaceChildren(...kids);
 }
 
+
+// ---------- Projektsida ----------
+let pjEdit={},pjLinkForm=null,pjDirty=false,pjRendering=false;
+const pjCollapsed=new Set();
+const ghInfo={};   // repo -> {t, loading, data, err}
+function ago(iso){
+  const d=new Date(iso),m=Math.round((Date.now()-d)/60000);
+  if(m<1)return "nyss";if(m<60)return "för "+m+(m===1?" minut":" minuter")+" sedan";
+  const h=Math.round(m/60);if(h<24)return "för "+h+(h===1?" timme":" timmar")+" sedan";
+  const dd=Math.round(h/24);if(dd<31)return "för "+dd+(dd===1?" dag":" dagar")+" sedan";
+  const mo=Math.round(dd/30);return "för "+mo+(mo===1?" månad":" månader")+" sedan";
+}
+async function gh(path){
+  const url="https://api.github.com/repos/"+path;
+  let r=await fetch(url,{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});
+  if((r.status===404||r.status===403)&&token())r=await fetch(url,{headers:headers(),cache:"no-store"});
+  return r;
+}
+async function loadGhInfo(repo,site){
+  const prev=ghInfo[repo];
+  ghInfo[repo]={t:Date.now(),loading:true,data:prev&&prev.data};
+  const out={};
+  try{
+    const r=await gh(repo);
+    if(!r.ok)throw r.status;
+    const j=await r.json();
+    out.pushed=j.pushed_at;out.lang=j.language;out.pages=j.has_pages;out.html=j.html_url;out.priv=j.private;
+    const [rel,cm,cl]=await Promise.all([
+      gh(repo+"/releases/latest"),
+      gh(repo+"/commits?per_page=100&since="+new Date(Date.now()-30*864e5).toISOString()),
+      gh(repo+"/commits?per_page=5")
+    ]);
+    if(rel.ok){const x=await rel.json();out.version=x.tag_name||x.name;out.vdate=x.published_at;out.vurl=x.html_url}
+    else{const tg=await gh(repo+"/tags?per_page=1");if(tg.ok){const t=await tg.json();if(t[0]){out.version=t[0].name;out.vurl=j.html_url+"/releases/tag/"+encodeURIComponent(t[0].name)}}}
+    if(cm.ok){const c=await cm.json();out.count=c.length;out.countMore=c.length>=100}
+    if(cl.ok){const c=await cl.json();out.commits=c.map(x=>({msg:(x.commit.message||"").split("\n")[0],date:x.commit.author&&x.commit.author.date,url:x.html_url}))}
+    if(site){try{await fetch(site,{mode:"no-cors",cache:"no-store"});out.up=true}catch(_){out.up=false}}
+    ghInfo[repo]={t:Date.now(),data:out};
+  }catch(e){ghInfo[repo]={t:Date.now(),err:e===404?"Hittar inte repot. Är det privat behöver din token läsrätt till det.":e===403?"GitHub har tillfälligt stoppat frågor. Försök igen om en stund.":"Kunde inte hämta information från GitHub just nu."}}
+  if(route==="proj-"+findItemByRepo(repo))renderProject(false);
+}
+function findItemByRepo(repo){const f=route.startsWith("proj-")&&findItem(route.slice(5));return f&&repoOf(f.it)===repo?f.it.id:null}
+function saveItem(sid,iid,fn){
+  const sec=getSection(sid);if(!sec)return;
+  saveSection(sid,{...sec,items:(sec.items||[]).map(x=>x.id===iid?fn({...x}):x)});
+}
+function stat(label,value,sub,extra){
+  return el("div",{class:"pj-stat"},el("span",{class:"label"},label),el("b",{},...[].concat(value)),sub?el("span",{class:"pj-sub"},...[].concat(sub)):null,extra||null);
+}
+function secHead(title,...right){return el("div",{class:"pj-head"},el("h2",{class:"label"},title),el("div",{class:"pj-tools"},...right))}
+function toolBtn(label,svg,onclick,pressed){const b=html("button",{class:"s-mini",type:"button","aria-label":label,title:label,onclick},svg);if(pressed!=null)b.setAttribute("aria-pressed",String(pressed));return b}
+const I_CHECK2=SVG('<path d="M5 12.5l4.5 4.5L19 7.5"/>');
+const I_TRASH=SVG('<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/>');
+const I_DOWN=SVG('<path d="M6 9l6 6 6-6"/>');
+
+function renderProject(force){
+  const view=$("view-project"),a=document.activeElement;
+  const f=findItem(route.slice(5));
+  if(!f){
+    if(!syncedOnce){view.replaceChildren(el("p",{class:"hint"},"Hämtar projektet…"));return}   // vänta på datan innan vi ger upp
+    const ps=projSection();go(ps?ps[0]:"");return}
+  const {sid,sec,it}=f;
+  document.title=it.name+" – [tomasandersson]";
+  if(!force&&view.contains(a)&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")){pjDirty=true;return}
+  pjDirty=false;
+  const keep=window.scrollY;
+  const kids=[];
+  kids.push(html("a",{class:"back",href:"#"+encodeURIComponent(sid),onclick:e=>{e.preventDefault();go(sid)}},'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',sec.title||"Projekt"));
+
+  const link=linkOf(it),repo=repoOf(it);
+  const btns=el("div",{class:"pj-btns"});
+  const ob=html("a",{class:"ibtn primary big",href:link,target:"_blank",rel:"noopener",title:"Öppna sidan","aria-label":"Öppna sidan"},I_EXT);btns.append(ob);
+  if(repo)btns.append(html("a",{class:"ibtn big",href:"https://github.com/"+repo,target:"_blank",rel:"noopener",title:"Repot på GitHub","aria-label":"Repot på GitHub"},ICO_CODE));
+  btns.append(html("button",{class:"ibtn big",type:"button",title:"Ändra projektet","aria-label":"Ändra projektet","aria-pressed":String(secAdd===it.id),onclick:()=>{secAdd=secAdd===it.id?false:it.id;renderProject(true);if(secAdd)focusForm()}},I_PEN));
+  const big=monoFor(it.name,"xl");
+  kids.push(el("header",{class:"pj-top"},big,el("div",{class:"pj-title"},el("h2",{class:"page-title"},it.name),el("a",{href:link,target:"_blank",rel:"noopener"},link.replace(/^https?:\/\//,"").replace(/\/$/,""))),btns));
+  if(secAdd===it.id)kids.push(addForm(sid,sec));
+  if(it.desc)kids.push(el("p",{class:"pj-desc"},it.desc));
+
+  // GitHub
+  if(repo){
+    const g=ghInfo[repo];
+    if(!g||(!g.loading&&Date.now()-g.t>5*60*1000))loadGhInfo(repo,/github\.io/i.test(link)?link:"");
+    const d=(ghInfo[repo]&&ghInfo[repo].data)||null,err=ghInfo[repo]&&ghInfo[repo].err;
+    if(err)kids.push(el("p",{class:"hint pj-err"},err));
+    else{
+      const wait="…";
+      const st=el("section",{class:"pj-stats","aria-label":"Från GitHub"});
+      st.append(stat("Senast uppladdad",d&&d.pushed?rel(d.pushed):wait,d&&d.pushed?ago(d.pushed):""));
+      if(d&&!d.version)st.append(stat("Version","Ingen än",el("a",{href:"https://github.com/"+repo+"/releases/new",target:"_blank",rel:"noopener"},"Skapa en release")));
+      else st.append(stat("Version",d?el("a",{href:d.vurl||"#",target:"_blank",rel:"noopener",class:"pj-ver"},d.version):wait,d&&d.vdate?"släppt "+rel(d.vdate).replace(/^Idag.*/,"idag").toLowerCase():(d?"senaste tagg":"")));
+      st.append(stat("Ändringar",d&&d.count!=null?(d.count+(d.countMore?"+":"")):wait,"senaste 30 dagarna"));
+      if(/github\.io/i.test(link))st.append(stat("Sidan",d?[el("i",{class:"dot "+(d.up?"ok":"err")}),d.up?"Uppe":"Svarar inte"]:wait,d&&d.lang?"GitHub Pages · "+d.lang:"GitHub Pages"));
+      else st.append(stat("Språk",d?(d.lang||"–"):wait,d&&d.priv?"privat repo":"publikt repo"));
+      kids.push(st);
+    }
+  }else kids.push(el("p",{class:"hint"},"Inget GitHub-repo kopplat. Tryck på pennan och fyll i GitHub-repo för att se version och senaste ändringar."));
+
+  const left=el("div",{class:"pj-col"}),right=el("div",{class:"pj-col"});
+
+  // ---- Att göra ----
+  const todos=it.todos||[];
+  const tsec=el("section",{class:"pj-sec","aria-label":"Att göra"},secHead("Att göra",el("button",{class:"pj-add",type:"button",onclick:()=>{
+    const lid=uid("t_");saveItem(sid,it.id,x=>({...x,todos:[...(x.todos||[]),{id:lid,title:"Ny lista",items:[]}]}));pjEdit["t"+lid]=true;renderProject(true);
+    setTimeout(()=>{const t=$("tt-"+lid);if(t){t.focus();t.select()}},40);
+  }},"+ Ny lista")));
+  if(!todos.length)tsec.append(el("p",{class:"hint"},"Inga listor än. Tryck på ”+ Ny lista” för att börja."));
+  todos.forEach(L=>{
+    const done=L.items.filter(x=>x.done).length,tot=L.items.length,coll=pjCollapsed.has(L.id),ren=!!pjEdit["t"+L.id];
+    const upd=fn=>saveItem(sid,it.id,x=>({...x,todos:(x.todos||[]).map(y=>y.id===L.id?fn({...y,items:[...y.items]}):y)}));
+    const card=el("div",{class:"todo"+(coll?" coll":"")});
+    let title;
+    if(ren){
+      title=el("input",{class:"tt-in",id:"tt-"+L.id,value:L.title,"aria-label":"Listans namn"});
+      const fin=()=>{if(pjRendering||title._done)return;title._done=true;const v=title.value.trim()||"Lista";delete pjEdit["t"+L.id];if(v!==L.title)upd(y=>({...y,title:v}));renderProject(true)};
+      title.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();fin()}if(e.key==="Escape"){delete pjEdit["t"+L.id];renderProject(true)}});
+      title.addEventListener("blur",fin);
+    }else title=el("h3",{},L.title);
+    card.append(el("div",{class:"todo-h"},
+      html("button",{class:"todo-fold",type:"button","aria-expanded":String(!coll),"aria-label":(coll?"Visa ":"Dölj ")+L.title,onclick:()=>{coll?pjCollapsed.delete(L.id):pjCollapsed.add(L.id);renderProject(true)}},I_DOWN),
+      title,el("span",{class:"todo-n"},done+" av "+tot+" klara"),
+      toolBtn("Byt namn på listan",I_PEN,()=>{pjEdit["t"+L.id]=true;renderProject(true);setTimeout(()=>{const t=$("tt-"+L.id);if(t){t.focus();t.select()}},30)}),
+      toolBtn("Ta bort listan",I_TRASH,()=>{
+        const before=(getSection(sid).items.find(x=>x.id===it.id).todos||[]);
+        saveItem(sid,it.id,x=>({...x,todos:(x.todos||[]).filter(y=>y.id!==L.id)}));renderProject(true);
+        toast("Listan ”"+L.title+"” togs bort",()=>{saveItem(sid,it.id,x=>({...x,todos:before}));renderProject(true)});
+      })));
+    if(tot)card.append(el("div",{class:"bar"},el("i",{style:"width:"+Math.round(done/tot*100)+"%"})));
+    if(!coll){
+      const ul=el("ul",{class:"todo-list"});
+      L.items.forEach(T=>{
+        const cb=el("input",{type:"checkbox","aria-label":T.text});cb.checked=!!T.done;
+        cb.addEventListener("change",()=>{upd(y=>({...y,items:y.items.map(z=>z.id===T.id?{...z,done:cb.checked}:z)}));renderProject(true)});
+        let txt;
+        if(pjEdit["i"+T.id]){
+          txt=el("input",{class:"ti-in",id:"ti-"+T.id,value:T.text,"aria-label":"Ändra punkt"});
+          const fin=()=>{if(pjRendering||txt._done)return;txt._done=true;const v=txt.value.trim();delete pjEdit["i"+T.id];upd(y=>({...y,items:v?y.items.map(z=>z.id===T.id?{...z,text:v}:z):y.items.filter(z=>z.id!==T.id)}));renderProject(true)};
+          txt.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();txt.blur()}if(e.key==="Escape"){delete pjEdit["i"+T.id];renderProject(true)}});
+          txt.addEventListener("blur",fin);
+        }else{
+          txt=el("button",{class:"ti-txt"+(T.done?" done":""),type:"button",title:"Tryck för att ändra",onclick:()=>{pjEdit["i"+T.id]=true;renderProject(true);setTimeout(()=>{const t=$("ti-"+T.id);if(t)t.focus()},30)}},T.text);
+        }
+        ul.append(el("li",{},cb,txt,el("button",{class:"ti-x",type:"button","aria-label":"Ta bort ”"+T.text+"”",title:"Ta bort",onclick:()=>{upd(y=>({...y,items:y.items.filter(z=>z.id!==T.id)}));renderProject(true)}},"×")));
+      });
+      card.append(ul);
+      const add=el("input",{class:"ti-add",id:"ta-"+L.id,placeholder:"+ Lägg till punkt","aria-label":"Ny punkt i "+L.title,enterkeyhint:"done"});
+      add.addEventListener("keydown",e=>{
+        if(e.key!=="Enter")return;e.preventDefault();const v=add.value.trim();if(!v)return;
+        upd(y=>({...y,items:[...y.items,{id:uid("x_"),text:v,done:false}]}));renderProject(true);
+        setTimeout(()=>{const n=$("ta-"+L.id);if(n)n.focus()},0);
+      });
+      card.append(add);
+    }
+    tsec.append(card);
+  });
+  left.append(tsec);
+
+  // ---- Anteckningar ----
+  const notes=Object.entries(items).filter(([,v])=>v.kind==="note"&&v.project===it.id).sort((a,b)=>(b[1].updated||0)-(a[1].updated||0));
+  const nsec=el("section",{class:"pj-sec","aria-label":"Anteckningar"},secHead("Anteckningar",el("button",{class:"pj-add",type:"button",onclick:()=>newNoteFor(it.id)},"+ Ny anteckning")));
+  if(!notes.length)nsec.append(el("p",{class:"hint"},"Inga anteckningar än."));
+  else nsec.append(el("div",{class:"pj-notes"},...notes.map(([id,n])=>el("button",{class:"pnote",type:"button",style:"background:var(--n-"+(n.color||"plain")+")",onclick:()=>openNote(id)},
+    n.title?el("b",{},n.title):null,n.text?el("span",{},n.text):null,el("time",{},rel(n.updated||n.created))))));
+  left.append(nsec);
+
+  // ---- Senaste ändringar ----
+  if(repo){
+    const d=ghInfo[repo]&&ghInfo[repo].data;
+    const csec=el("section",{class:"pj-sec","aria-label":"Senaste ändringar"},secHead("Senaste ändringar"));
+    if(!d)csec.append(el("p",{class:"hint"},ghInfo[repo]&&ghInfo[repo].err?"–":"Hämtar…"));
+    else if(!d.commits||!d.commits.length)csec.append(el("p",{class:"hint"},"Inga ändringar än."));
+    else{
+      csec.append(el("ul",{class:"commits"},...d.commits.map(x=>el("li",{},el("a",{href:x.url,target:"_blank",rel:"noopener"},x.msg),el("time",{},x.date?rel(x.date):"")))));
+      csec.append(el("a",{class:"pj-more",href:"https://github.com/"+repo+"/commits",target:"_blank",rel:"noopener"},"Alla ändringar på GitHub"));
+    }
+    right.append(csec);
+  }
+
+  // ---- Länkar ----
+  const links=it.links||[],le=!!pjEdit.links;
+  const lsec=el("section",{class:"pj-sec","aria-label":"Länkar"},secHead("Länkar",
+    links.length?toolBtn(le?"Klar":"Redigera länkar",le?I_CHECK2:I_PEN,()=>{pjEdit.links=!le;pjLinkForm=null;renderProject(true)},le):null,
+    toolBtn("Lägg till länk",I_PLUS,()=>{pjLinkForm="new";renderProject(true);setTimeout(()=>{const x=$("pl-name");if(x&&!touchUI())x.focus()},30)})));
+  if(!links.length&&!pjLinkForm)lsec.append(el("p",{class:"hint"},"Inga länkar än."));
+  links.forEach(L=>{
+    const row=el("div",{class:"pj-link"},html("a",{href:L.url,target:"_blank",rel:"noopener"},null,monoFor(L.name,"sm"),el("span",{},el("b",{},L.name),el("span",{class:"pj-sub"},host(L.url)))));
+    if(le)row.append(toolBtn("Ändra "+L.name,I_PEN,()=>{pjLinkForm=L.id;renderProject(true)}),toolBtn("Ta bort "+L.name,I_TRASH,()=>{
+      const before=links;saveItem(sid,it.id,x=>({...x,links:(x.links||[]).filter(y=>y.id!==L.id)}));renderProject(true);
+      toast("Länken togs bort",()=>{saveItem(sid,it.id,x=>({...x,links:before}));renderProject(true)});
+    }));
+    lsec.append(row);
+  });
+  if(pjLinkForm){
+    const old=pjLinkForm==="new"?null:links.find(x=>x.id===pjLinkForm);
+    const fm=el("form",{class:"mform",autocomplete:"off"});
+    const n=el("input",{id:"pl-name",placeholder:"Namn, t.ex. Datafilen"}),u=el("input",{id:"pl-url",placeholder:"Adress",inputmode:"url",autocapitalize:"off"});
+    if(old){n.value=old.name;u.value=old.url}
+    const h=el("p",{class:"hint"},"Du behöver inte skriva https://.");
+    fm.append(n,u,h,el("div",{class:"row"},el("button",{class:"btn primary",type:"submit"},old?"Spara":"Lägg till"),el("button",{class:"btn",type:"button",onclick:()=>{pjLinkForm=null;renderProject(true)}},"Avbryt")));
+    fm.addEventListener("submit",e=>{
+      e.preventDefault();const url=normUrl(u.value);
+      if(!u.value.trim()||url===null){h.className="hint err";h.textContent="Adressen ser inte rätt ut.";u.focus();return}
+      const name=n.value.trim()||host(url);
+      document.activeElement&&document.activeElement.blur();
+      saveItem(sid,it.id,x=>({...x,links:old?(x.links||[]).map(y=>y.id===old.id?{...y,name,url}:y):[...(x.links||[]),{id:uid("pl_"),name,url}]}));
+      pjLinkForm=null;renderProject(true);
+    });
+    lsec.append(fm);
+  }
+  right.append(lsec);
+
+  // ---- Bilder ----
+  const imgs=it.images||[],ie=!!pjEdit.imgs;
+  const inp=el("input",{type:"file",accept:"image/*",multiple:"",hidden:"",id:"pj-files"});
+  const isec=el("section",{class:"pj-sec","aria-label":"Bilder"},secHead("Bilder",
+    imgs.length?toolBtn(ie?"Klar":"Redigera bilder",ie?I_CHECK2:I_PEN,()=>{pjEdit.imgs=!ie;renderProject(true)},ie):null,
+    html("label",{class:"s-mini",for:"pj-files",title:"Lägg till bilder","aria-label":"Lägg till bilder",tabindex:"0"},I_PLUS,inp)));
+  inp.addEventListener("change",async()=>{
+    const files=[...inp.files];if(!files.length)return;
+    if(!token()){toast("Lägg in din GitHub-token i Inställningar för att ladda upp bilder.");return}
+    pjEdit.busy=(pjEdit.busy||0)+files.length;renderProject(true);
+    for(const file of files){
+      try{const path=await uploadImage(file,it.id);saveItem(sid,it.id,x=>({...x,images:[...(x.images||[]),path]}))}
+      catch(e){toast("Kunde inte ladda upp ”"+file.name+"”.")}
+      pjEdit.busy--;renderProject(true);
+    }
+  });
+  if(!imgs.length&&!pjEdit.busy)isec.append(el("p",{class:"hint"},"Inga bilder än. Tryck på + för att lägga till."));
+  if(imgs.length||pjEdit.busy){
+    const g=ie?el("div",{class:"gal gal-edit"},...imgs.map((path,i)=>el("div",{class:"gtile"},el("img",{"data-path":path,alt:""}),
+      el("button",{class:"gx",type:"button","aria-label":"Ta bort bild "+(i+1),onclick:()=>{
+        saveItem(sid,it.id,x=>({...x,images:(x.images||[]).filter(y=>y!==path)}));deleteImage(path);renderProject(true);toast("Bilden togs bort")}},"×")))):gallery(imgs);
+    for(let i=0;i<(pjEdit.busy||0);i++)g.append(el("div",{class:"gtile busy"},el("span",{},"Laddar upp…")));
+    isec.append(g);
+  }
+  right.append(isec);
+
+  kids.push(el("div",{class:"pj-grid"},left,right));
+  pjRendering=true;
+  try{view.replaceChildren(...kids)}finally{pjRendering=false}
+  setTimeout(()=>hydrateImgs(view),0);
+  if(!force)window.scrollTo(0,keep);
+}
+$("view-project").addEventListener("focusout",()=>setTimeout(()=>{if(pjDirty&&!$("view-project").contains(document.activeElement))renderProject(true)},0));
+
 // --- Sektionssidan ---
 function siteFor(r){
   if(r.has_pages)return r.name.toLowerCase()===(GH.owner+".github.io").toLowerCase()?"https://"+GH.owner+".github.io/":"https://"+GH.owner+".github.io/"+r.name+"/";
@@ -1222,13 +1548,14 @@ async function loadRepos(){
 const openCards=new Set();
 function card(sid,sec,it){
   const link=linkOf(it),open=openCards.has(it.id);
-  const toggle=()=>{if(openCards.has(it.id))openCards.delete(it.id);else{if(!c.classList.contains("has-desc"))return;openCards.add(it.id)}renderPage(true)};
+  const isProj=!!(projSection()&&projSection()[0]===sid);
+  const toggle=()=>{if(isProj){go("proj-"+it.id);return}if(openCards.has(it.id))openCards.delete(it.id);else{if(!c.classList.contains("has-desc"))return;openCards.add(it.id)}renderPage(true)};
   const imgs=it.images||[],more=!!(it.desc||imgs.length);
   const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(more?(open?", fäll ihop":", visa mer"):"")},monoFor(it.name),
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(link))));
-  if(more)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  if(more&&!isProj)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   head.addEventListener("click",e=>{e.stopPropagation();toggle()});
-  const c=el("article",{class:"card"+(open?" open":"")+(more?" has-desc":"")},head);
+  const c=el("article",{class:"card"+(open&&!isProj?" open":"")+(more||isProj?" has-desc":"")+(isProj?" is-proj":"")},head);
   c.addEventListener("click",e=>{if(e.target.closest("a,button"))return;toggle()});
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
   if(open&&imgs.length)c.append(gallery(imgs));
@@ -1257,9 +1584,10 @@ function addForm(sid,sec){
   const name=el("input",{id:"m-name",placeholder:"t.ex. Veckomeny"});
   const url=el("input",{id:"m-url",placeholder:"t.ex. tomas-m-andersson.github.io/veckomeny",inputmode:"url",autocapitalize:"off"});
   const desc=el("textarea",{id:"m-desc",rows:"3",placeholder:"Vad är det här? Skriv gärna lite mer – det syns när kortet fälls ut."});
-  if(old){name.value=old.name||"";url.value=linkOf(old)||"";desc.value=old.desc||""}
+  const repoIn=el("input",{id:"m-repo",placeholder:"t.ex. tomas-m-andersson/veckomeny",autocapitalize:"off"});
+  if(old){name.value=old.name||"";url.value=linkOf(old)||"";desc.value=old.desc||"";repoIn.value=old.repo||""}
   const hint=el("p",{class:"hint"},"Du behöver inte skriva https://.");
-  f.append(lab("Namn",name),lab("Webbsida",url),lab("Beskrivning (frivilligt) – visas när du klickar på kortet",desc));
+  f.append(lab("Namn",name),lab("Webbsida",url),lab("Beskrivning (frivilligt)",desc),lab("GitHub-repo (frivilligt) – behövs bara om webbsidan inte ligger på GitHub Pages",repoIn));
   // Bilder: laddas upp direkt när du väljer dem, kopplas till projektet när du sparar
   if(formFor!==secAdd){formFor=secAdd;formImgs=old?[...(old.images||[])]:[];formUploaded=[];formBusy=0}
   const gbox=el("div",{class:"gal gal-edit"});
@@ -1292,7 +1620,7 @@ function addForm(sid,sec){
     el("button",{class:"btn",type:"button",onclick:cancel},"Avbryt"),
     el("button",{class:"btn danger",type:"button",style:"margin-left:auto",onclick:()=>{
       const cur=getSection(sid)||sec;const before={...cur};
-      secAdd=false;saveSection(sid,{...cur,items:(cur.items||[]).filter(x=>x.id!==old.id)});renderPage(true);
+      secAdd=false;saveSection(sid,{...cur,items:(cur.items||[]).filter(x=>x.id!==old.id)});if(route==="proj-"+old.id)go(sid);else renderPage(true);
       toast("”"+old.name+"” togs bort",()=>saveSection(sid,before));
     }},"Ta bort")));
   else f.append(el("div",{class:"row"},
@@ -1307,7 +1635,12 @@ function addForm(sid,sec){
     if(u===null){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut. Prova till exempel tomas-m-andersson.github.io/veckomeny.";url.focus();return}
     if(!n)n=host(u);
     if(formBusy){hint.className="hint err";hint.textContent="Vänta tills bilderna har laddats upp.";return}
-    const item={id:old?old.id:uid("i_"),name:n,url:u};if(d)item.desc=d;if(formImgs.length)item.images=[...formImgs];
+    const rv=repoIn.value.trim().replace(/^https?:\/\/(www\.)?github\.com\//i,"").replace(/\.git$/,"").replace(/\/+$/,"");
+    if(rv&&!/^[\w.-]+\/[\w.-]+$/.test(rv)){hint.className="hint err";hint.textContent="GitHub-repot ska skrivas som ägare/namn, t.ex. tomas-m-andersson/veckomeny.";repoIn.focus();return}
+    const item={...(old||{}),id:old?old.id:uid("i_"),name:n,url:u};delete item.site;
+    if(d)item.desc=d;else delete item.desc;
+    if(formImgs.length)item.images=[...formImgs];else delete item.images;
+    if(rv)item.repo=rv;else delete item.repo;
     if(old)(old.images||[]).filter(x=>!formImgs.includes(x)).forEach(deleteImage);
     formFor=null;
     document.activeElement&&document.activeElement.blur();
@@ -1345,6 +1678,9 @@ function moveSection(sid,delta){
   commit();
 }
 function renderPage(force){
+  const onProj=route.startsWith("proj-");
+  $("view-project").hidden=!onProj;
+  if(onProj){$("view-home").hidden=true;$("view-section").hidden=true;renderProject(force);return}
   const sec=route?getSection(route):null;
   const onSec=!!sec;
   $("view-home").hidden=onSec;$("view-section").hidden=!onSec;
@@ -1380,7 +1716,7 @@ function renderPage(force){
     // Gör "+ Lägg till" lika hög som ett ihopfällt projektkort
     const add=document.querySelector("#sec-cards .card-add"),ref=document.querySelector("#sec-cards .card:not(.card-add):not(.open)");
     if(add)add.style.height=ref?ref.offsetHeight+"px":"";
-    document.querySelectorAll("#sec-cards .card:not(.has-desc):not(.card-add)").forEach(c=>{
+    document.querySelectorAll("#sec-cards .card:not(.has-desc):not(.card-add):not(.is-proj)").forEach(c=>{
       const n=c.querySelector(".name");
       if(c.classList.contains("open")||(n&&n.scrollWidth>n.clientWidth+1)){c.classList.add("has-desc");c.querySelector(".top").insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>')}
     });

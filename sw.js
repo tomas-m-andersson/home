@@ -1,7 +1,7 @@
 // [tomasandersson] – service worker.
 // Sparar själva sidan så att appen startar snabbt och även utan nät.
 // Anteckningarna (GitHub) cachas ALDRIG här – de hämtas alltid färskt.
-const CACHE = "vardagssidan-v3";
+const CACHE = "vardagssidan-v4";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png", "./favicon.png"];
 
 self.addEventListener("install", e => {
