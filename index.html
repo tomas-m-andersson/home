@@ -58,13 +58,16 @@ button,input,textarea{font:inherit;color:inherit}
   display:flex;flex-direction:column;gap:26px}
 
 /* Huvud */
-header{display:flex;align-items:center;gap:8px}
+header{display:flex;align-items:flex-start;gap:8px 16px;flex-wrap:wrap}
+header>#open-menu,header>.tools{align-self:center}
+header .quick{margin:0;flex:1 1 320px;max-width:640px;width:auto}
+.quick textarea{min-height:48px}
 #open-menu{margin-left:-8px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0}
 .tools{margin-left:auto}
 
 /* Infopanel: datum, tid, väder, sol och regn */
-.info{display:flex;flex-wrap:wrap;align-items:center;column-gap:16px;row-gap:6px;min-width:0;
+.info{display:flex;flex-wrap:wrap;align-items:center;column-gap:16px;row-gap:6px;min-width:0;min-height:50px;box-sizing:border-box;
   padding:9px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);font-size:13.5px;line-height:1.3}
 .info b{font-weight:600}
 .mut{color:var(--muted)}
@@ -86,6 +89,7 @@ header{display:flex;align-items:center;gap:8px}
 @media (max-width:600px){
   header{flex-wrap:wrap;row-gap:10px}
   .info{order:3;flex-basis:100%;column-gap:14px}
+  header .quick{order:4;flex-basis:100%;max-width:none}
   .i-sep{display:none}
 }
 .results{display:flex;flex-direction:column;gap:2px}
@@ -362,13 +366,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
       <span class="i-item mut" id="i-sun" hidden></span>
       <span class="i-item mut" id="i-rain" hidden></span>
     </div>
-    <div class="tools">
-      <button class="sync" id="sync" type="button" title="Ansluter…"><i class="dot"></i><span class="sr">Ansluter…</span></button>
-    </div>
-  </header>
-
-  <main id="view-home" class="view">
-  <form class="quick" id="quick" autocomplete="off">
+    <form class="quick" id="quick" autocomplete="off">
     <input id="q-title" placeholder="Rubrik" aria-label="Rubrik">
     <textarea id="q-text" rows="1" placeholder="Skriv en anteckning…" aria-label="Anteckning"></textarea>
     <div class="bar">
@@ -376,6 +374,12 @@ body.dragging,body.dragging *{cursor:grabbing!important}
       <div><button type="button" class="btn" id="q-cancel">Avbryt</button><button type="submit" class="btn primary">Spara</button></div>
     </div>
   </form>
+    <div class="tools">
+      <button class="sync" id="sync" type="button" title="Ansluter…"><i class="dot"></i><span class="sr">Ansluter…</span></button>
+    </div>
+  </header>
+
+  <main id="view-home" class="view">
 
   <section aria-labelledby="h-links">
     <div class="sec-head"><h2 class="label" id="h-links">Mina länkar</h2><button class="btn" id="edit-links" type="button">Redigera</button></div>
