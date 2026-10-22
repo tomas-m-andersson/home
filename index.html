@@ -309,6 +309,32 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .flab input,.flab textarea{font-weight:400;color:var(--ink)}
 .mform textarea{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%;min-width:0;resize:vertical;font:inherit;color:var(--ink);box-sizing:border-box}
 
+/* Bilder */
+.gal{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gtile{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--line);padding:0;cursor:zoom-in;display:block}
+.gtile img{width:100%;height:100%;object-fit:cover;display:block}
+.gtile.broken::after{content:"Bilden kunde inte visas";position:absolute;inset:0;display:grid;place-items:center;font-size:11px;color:var(--muted);text-align:center;padding:4px}
+.gal-edit .gtile{cursor:default}
+.gal-edit{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}
+.gx{position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:18px;line-height:1;cursor:pointer}
+.gtile.busy,.gadd{display:grid;place-items:center;text-align:center;font-size:12.5px;color:var(--muted);padding:6px}
+.gadd{border:1.5px dashed var(--line);background:transparent;cursor:pointer;font-weight:600}
+.gadd:hover{color:var(--ink)}
+.gadd:focus-within{outline:2px solid var(--focus)}
+.imgcount{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-left:auto}
+.imgcount svg{width:15px;height:15px}
+.ppanel .gal{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lb{position:fixed;inset:0;z-index:80;background:rgba(6,9,8,.92);display:grid;place-items:center;padding:64px 72px}
+@media (max-width:600px){.lb{padding:64px 8px}}
+.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+.lb-btn{position:absolute;width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;cursor:pointer}
+.lb-btn:hover{background:rgba(255,255,255,.24)}
+.lb-btn svg{width:22px;height:22px}
+.lb-close{top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px))}
+.lb-prev{left:max(12px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
+.lb-next{right:max(12px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
+.lb-count{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
+
 /* Snabbpanel för ett projekt */
 .ppanel{position:sticky;top:0;align-self:flex-start;height:100vh;width:320px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);
   overflow-y:auto;padding:22px 18px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;z-index:29}
@@ -524,6 +550,13 @@ body.dragging,body.dragging *{cursor:grabbing!important}
   </div>
 </div>
 
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Bild">
+  <img id="lb-img" alt="">
+  <button class="lb-btn lb-close" id="lb-close" type="button" aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="lb-btn lb-prev" id="lb-prev" type="button" aria-label="Föregående bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+  <button class="lb-btn lb-next" id="lb-next" type="button" aria-label="Nästa bild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  <div class="lb-count" id="lb-count"></div>
+</div>
 <div class="toast" id="toast" hidden role="status"><span id="toast-msg"></span><button class="btn" id="toast-undo" type="button">Ångra</button></div>
 
 <script>
@@ -618,6 +651,72 @@ async function ghPut(file,sha){
   if(sha)body.sha=sha;
   return fetch(API,{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(body)});
 }
+// ---------- Bilder: sparas som filer i mappen images/ i home-data ----------
+const IMG_DIR="images/";
+const imgCache=new Map();   // sökväg -> objekt-URL (eller Promise)
+function apiUrl(path){return "https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/contents/"+path.split("/").map(encodeURIComponent).join("/")}
+function loadImg(path){
+  if(imgCache.has(path))return imgCache.get(path);
+  const pr=(async()=>{
+    const r=await fetch(apiUrl(path)+"?ref="+GH.branch,{headers:{...headers(),"Accept":"application/vnd.github.raw"}});
+    if(!r.ok)throw r.status;
+    const u=URL.createObjectURL(await r.blob());imgCache.set(path,u);return u;
+  })();
+  imgCache.set(path,pr);pr.catch(()=>imgCache.delete(path));
+  return pr;
+}
+// Fyller i alla <img data-path> som inte har laddats än
+function hydrateImgs(root){
+  (root||document).querySelectorAll("img[data-path]:not([src])").forEach(img=>{
+    const path=img.dataset.path;
+    Promise.resolve(loadImg(path)).then(u=>{img.src=u}).catch(()=>{img.closest(".gtile")&&img.closest(".gtile").classList.add("broken")});
+  });
+}
+async function shrinkImage(file){
+  const MAX=1600;
+  let src;
+  try{src=await createImageBitmap(file,{imageOrientation:"from-image"})}
+  catch(_){src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)})}
+  const w=src.width,h=src.height,k=Math.min(1,MAX/Math.max(w,h));
+  const c=document.createElement("canvas");c.width=Math.round(w*k);c.height=Math.round(h*k);
+  c.getContext("2d").drawImage(src,0,0,c.width,c.height);
+  return await new Promise(res=>c.toBlob(res,"image/jpeg",0.82));
+}
+function blobToB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(b)})}
+async function uploadImage(file,prefix){
+  const blob=await shrinkImage(file);
+  const path=IMG_DIR+prefix+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+".jpg";
+  const r=await fetch(apiUrl(path),{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},
+    body:JSON.stringify({message:"Lägg till bild",content:await blobToB64(blob),branch:GH.branch})});
+  if(!r.ok)throw r.status;
+  imgCache.set(path,URL.createObjectURL(blob));
+  return path;
+}
+async function deleteImage(path){
+  try{
+    const g=await fetch(apiUrl(path)+"?ref="+GH.branch+"&_="+Date.now(),{headers:headers(),cache:"no-store"});
+    if(!g.ok)return;
+    const j=await g.json();
+    await fetch(apiUrl(path),{method:"DELETE",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify({message:"Ta bort bild",sha:j.sha,branch:GH.branch})});
+  }catch(_){}
+}
+// Helskärmsvisning av bilder
+let lbList=[],lbIdx=0;
+function openLightbox(list,i){lbList=list;lbIdx=i;$("lb").hidden=false;showLb();$("lb-close").focus()}
+function closeLightbox(){$("lb").hidden=true;$("lb-img").removeAttribute("src")}
+function showLb(){
+  const path=lbList[lbIdx];const img=$("lb-img");img.removeAttribute("src");
+  Promise.resolve(loadImg(path)).then(u=>{if(lbList[lbIdx]===path)img.src=u}).catch(()=>{});
+  $("lb-count").textContent=lbList.length>1?(lbIdx+1)+" / "+lbList.length:"";
+  $("lb-prev").hidden=$("lb-next").hidden=lbList.length<2;
+}
+function lbStep(d){if(lbList.length<2)return;lbIdx=(lbIdx+d+lbList.length)%lbList.length;showLb()}
+function gallery(list){
+  const g=el("div",{class:"gal"});
+  list.forEach((path,i)=>g.append(el("button",{class:"gtile",type:"button","aria-label":"Visa bild "+(i+1)+" av "+list.length,onclick:e=>{e.stopPropagation();openLightbox(list,i)}},el("img",{"data-path":path,alt:""}))));
+  return g;
+}
+
 let lastStatus={kind:"",text:""};
 function status(kind,text){
   lastStatus={kind,text};
@@ -972,7 +1071,7 @@ function renderSide(){
 (function(){
   let mode=null,sx=0,sy=0,st=0,dx=0,w=0;
   const side=$("side"),scrim=$("menu-scrim");
-  const blocked=()=>deskMQ.matches||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
+  const blocked=()=>deskMQ.matches||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
   function reset(){side.style.transition="";side.style.transform="";side.style.visibility="";scrim.style.opacity="";scrim.style.transition=""}
   document.addEventListener("touchstart",e=>{
     mode=null;
@@ -1064,6 +1163,7 @@ function renderPanel(){
     el("div",{class:"pp-name"},el("h2",{},it.name),el("a",{href:shown,target:"_blank",rel:"noopener",title:shown},shown.replace(/^https?:\/\//,"").replace(/\/$/,""))),
     html("button",{class:"icon-btn pp-close",type:"button","aria-label":"Stäng panelen",onclick:closePanel},I_X)));
   if(it.desc)kids.push(el("p",{class:"pp-desc"},it.desc));
+  if((it.images||[]).length){kids.push(gallery(it.images));setTimeout(()=>hydrateImgs(p),0)}
   const acts=el("div",{class:"pp-acts"});
   acts.append(html("a",{class:"s-item primary",href:shown,target:"_blank",rel:"noopener"},I_EXT,el("span",{class:"lbl"},"Öppna sidan")));
   const repo=repoOf(it);
@@ -1117,16 +1217,19 @@ const openCards=new Set();
 function card(sid,sec,it){
   const link=linkOf(it),open=openCards.has(it.id);
   const toggle=()=>{if(openCards.has(it.id))openCards.delete(it.id);else openCards.add(it.id);renderPage(true)};
-  const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(it.desc?(open?", dölj beskrivningen":", visa beskrivningen"):"")},monoFor(it.name),
+  const imgs=it.images||[],more=!!(it.desc||imgs.length);
+  const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(more?(open?", fäll ihop":", visa mer"):"")},monoFor(it.name),
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(link))));
-  if(it.desc)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+  if(more)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   head.addEventListener("click",e=>{e.stopPropagation();toggle()});
-  const c=el("article",{class:"card"+(open?" open":"")+(it.desc?" has-desc":"")},head);
+  const c=el("article",{class:"card"+(open?" open":"")+(more?" has-desc":"")},head);
   c.addEventListener("click",e=>{if(e.target.closest("a,button"))return;toggle()});
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
+  if(open&&imgs.length)c.append(gallery(imgs));
   const acts=el("div",{class:"acts"});
   acts.append(el("a",{class:"chip",href:link,target:"_blank",rel:"noopener",title:link},"Öppna sidan"));
   acts.append(el("button",{class:"chip chip-btn",type:"button","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}},"Ändra"));
+  if(imgs.length&&!open)acts.insertAdjacentHTML("beforeend",'<span class="imgcount" title="'+imgs.length+(imgs.length===1?' bild':' bilder')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.5"/></svg>'+imgs.length+'</span>');
   c.append(acts);
   if(secEdit)c.append(el("button",{class:"xs",type:"button","aria-label":"Ta bort "+it.name,onclick:()=>{
     const before={...sec};saveSection(sid,{...sec,items:sec.items.filter(x=>x.id!==it.id)});toast("”"+it.name+"” togs bort",()=>saveSection(sid,before));
@@ -1135,6 +1238,7 @@ function card(sid,sec,it){
 }
 function focusForm(){setTimeout(()=>{const x=$("m-name");if(x){x.focus();x.scrollIntoView({block:"center",behavior:"smooth"})}},60)}
 function normUrl(u){u=(u||"").trim();if(!u)return "";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);if(!x.hostname.includes("."))return null}catch(_){return null}return u}
+let formFor=null,formImgs=[],formUploaded=[],formBusy=0;
 function addForm(sid,sec){
   const editId=typeof secAdd==="string"?secAdd:null;
   const old=editId?(sec.items||[]).find(x=>x.id===editId):null;
@@ -1146,8 +1250,34 @@ function addForm(sid,sec){
   const desc=el("textarea",{id:"m-desc",rows:"3",placeholder:"Vad är det här? Skriv gärna lite mer – det syns när kortet fälls ut."});
   if(old){name.value=old.name||"";url.value=linkOf(old)||"";desc.value=old.desc||""}
   const hint=el("p",{class:"hint"},"Du behöver inte skriva https://.");
-  f.append(lab("Namn",name),lab("Webbsida",url),lab("Beskrivning (frivilligt) – visas när du klickar på kortet",desc),hint);
-  const cancel=()=>{secAdd=false;repoOpen=false;renderPage(true)};
+  f.append(lab("Namn",name),lab("Webbsida",url),lab("Beskrivning (frivilligt) – visas när du klickar på kortet",desc));
+  // Bilder: laddas upp direkt när du väljer dem, kopplas till projektet när du sparar
+  if(formFor!==secAdd){formFor=secAdd;formImgs=old?[...(old.images||[])]:[];formUploaded=[];formBusy=0}
+  const gbox=el("div",{class:"gal gal-edit"});
+  const ghint=el("p",{class:"hint"});
+  function drawImgs(){
+    const tiles=formImgs.map((path,i)=>el("div",{class:"gtile"},el("img",{"data-path":path,alt:""}),
+      el("button",{class:"gx",type:"button","aria-label":"Ta bort bild "+(i+1),title:"Ta bort bild",onclick:()=>{formImgs=formImgs.filter(x=>x!==path);drawImgs()}},"×")));
+    for(let i=0;i<formBusy;i++)tiles.push(el("div",{class:"gtile busy"},el("span",{},"Laddar upp…")));
+    const inp=el("input",{type:"file",accept:"image/*",multiple:"",hidden:"",id:"m-files"});
+    inp.addEventListener("change",async()=>{
+      const files=[...inp.files];if(!files.length)return;
+      if(!token()){ghint.className="hint err";ghint.textContent="Lägg in din GitHub-token i Inställningar för att kunna ladda upp bilder.";return}
+      formBusy+=files.length;drawImgs();
+      for(const file of files){
+        try{const path=await uploadImage(file,(old?old.id:"ny"));formImgs.push(path);formUploaded.push(path);ghint.className="hint";ghint.textContent=""}
+        catch(e){ghint.className="hint err";ghint.textContent=e===401?"Token fungerar inte – byt token i Inställningar.":"Kunde inte ladda upp ”"+file.name+"”. Försök igen."}
+        formBusy--;drawImgs();
+      }
+    });
+    tiles.push(el("label",{class:"gtile gadd",for:"m-files"},inp,el("span",{},"+ Lägg till bilder")));
+    gbox.replaceChildren(...tiles);hydrateImgs(gbox);
+  }
+  drawImgs();
+  f.append(el("div",{class:"flab"},el("span",{},"Bilder (frivilligt) – visas när kortet fälls ut"),gbox,ghint),hint);
+  const cancel=()=>{
+    const keep=new Set(old?old.images||[]:[]);formUploaded.filter(x=>!keep.has(x)).forEach(deleteImage);
+    formFor=null;secAdd=false;repoOpen=false;renderPage(true)};
   if(old)f.append(el("div",{class:"row"},
     el("button",{class:"btn primary",type:"submit"},"Spara ändringar"),
     el("button",{class:"btn",type:"button",onclick:cancel},"Avbryt"),
@@ -1167,7 +1297,10 @@ function addForm(sid,sec){
     if(!url.value.trim()){hint.className="hint err";hint.textContent="Skriv in webbsidans adress.";url.focus();return}
     if(u===null){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut. Prova till exempel tomas-m-andersson.github.io/veckomeny.";url.focus();return}
     if(!n)n=host(u);
-    const item={id:old?old.id:uid("i_"),name:n,url:u};if(d)item.desc=d;
+    if(formBusy){hint.className="hint err";hint.textContent="Vänta tills bilderna har laddats upp.";return}
+    const item={id:old?old.id:uid("i_"),name:n,url:u};if(d)item.desc=d;if(formImgs.length)item.images=[...formImgs];
+    if(old)(old.images||[]).filter(x=>!formImgs.includes(x)).forEach(deleteImage);
+    formFor=null;
     document.activeElement&&document.activeElement.blur();
     secAdd=false;repoOpen=false;
     const cur=getSection(sid)||sec;
@@ -1233,6 +1366,7 @@ function renderPage(force){
     bar.hidden=false;
   }else{bar.hidden=true;bar.replaceChildren()}
   const cards=list.map(it=>card(sid,sec,it));
+  setTimeout(()=>hydrateImgs($("view-section")),0);
   if(secAdd!==true)cards.push(el("button",{class:"card card-add",type:"button",onclick:()=>{secAdd=true;repoOpen=false;renderPage(true);focusForm()}},"+ Lägg till"));
   $("sec-cards").replaceChildren(...cards);
   $("sec-form").replaceChildren(...(secAdd?[addForm(sid,sec)]:list.length?[]:[el("p",{class:"sec-empty"},sid==="s_projekt"?"Inga projekt än. Tryck på ”+ Lägg till” och sedan ”Välj från GitHub”.":"Inga länkar än.")]));
@@ -1306,7 +1440,12 @@ function removeNote(id,n){del(id);toast("Anteckningen togs bort",()=>put(id,n))}
 $("dlg").addEventListener("submit",e=>{e.preventDefault();closeNote()});
 $("note-scrim").addEventListener("mousedown",e=>{if(e.target===$("note-scrim"))closeNote()});
 $("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;draftProject=null;$("note-scrim").hidden=true;if(n)removeNote(id,n)};
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu();else if(panelItem)closePanel()});
+$("lb-close").onclick=closeLightbox;$("lb-prev").onclick=()=>lbStep(-1);$("lb-next").onclick=()=>lbStep(1);
+$("lb").addEventListener("click",e=>{if(e.target===$("lb"))closeLightbox()});
+document.addEventListener("keydown",e=>{if($("lb").hidden)return;if(e.key==="ArrowLeft")lbStep(-1);else if(e.key==="ArrowRight")lbStep(1)});
+{let lx=0,ly=0;$("lb").addEventListener("touchstart",e=>{lx=e.touches[0].clientX;ly=e.touches[0].clientY},{passive:true});
+ $("lb").addEventListener("touchend",e=>{const t=e.changedTouches[0],dx=t.clientX-lx,dy=t.clientY-ly;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy))lbStep(dx<0?1:-1);else if(dy>90&&Math.abs(dy)>Math.abs(dx))closeLightbox()})}
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("lb").hidden){closeLightbox();return}if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu();else if(panelItem)closePanel()});
 
 // ---------- Länkar: lägg till / ta bort ----------
 let editLinkId=null;
