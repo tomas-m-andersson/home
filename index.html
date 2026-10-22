@@ -59,7 +59,6 @@ button,input,textarea{font:inherit;color:inherit}
 /* Huvud */
 header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .date{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance;min-width:0}
-.date small{display:block;font-family:var(--f-body);font-weight:500;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .tools{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center}
 .icon-btn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
@@ -185,7 +184,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 <body>
 <div class="wrap">
   <header>
-    <h1 class="date"><small id="greet">God dag</small><span id="today">Idag</span></h1>
+    <h1 class="date"><span id="today">Idag</span></h1>
     <div class="tools">
       <button class="sync" id="sync" type="button" title="Visa sparstatus"><i class="dot"></i><span>Ansluter…</span></button>
       <button class="icon-btn" id="open-settings" type="button" aria-label="Inställningar" title="Inställningar">
@@ -296,8 +295,6 @@ function setDate(){
   const d=new Date();
   const t=d.toLocaleDateString("sv-SE",{weekday:"long",day:"numeric",month:"long"});
   $("today").textContent=t.charAt(0).toUpperCase()+t.slice(1);
-  const h=d.getHours();
-  $("greet").textContent=h<5?"God natt":h<10?"God morgon":h<17?"God dag":"God kväll";
 }
 setDate(); setInterval(setDate,60000);
 
