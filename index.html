@@ -220,7 +220,9 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .card .exp{width:18px;height:18px;color:var(--muted);flex-shrink:0;transition:transform .2s}
 .card.open .exp{transform:rotate(180deg)}
 .card .top .mono{flex-shrink:0}
-.card .name{font-weight:600;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .name{display:block;font-weight:600;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card.open .name{white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.card.open .top{align-items:flex-start}
 .card .host{display:block;font-size:12.5px;color:var(--muted);font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .top>span:last-child{min-width:0}
 .card .desc{display:none;margin:0;font-size:14px;color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere}
