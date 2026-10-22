@@ -136,8 +136,10 @@ header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:680px}
 .link:hover{background:var(--surface);box-shadow:var(--shadow)}
 .mono{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:20px;color:#fff}
 .link span{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.link .x{position:absolute;top:2px;right:4px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:none;line-height:1;font-size:16px}
-.links.editing .x{display:block}
+.link .x,.link .e{position:absolute;top:2px;right:4px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:none;line-height:1;font-size:16px;padding:0;place-items:center;z-index:1}
+.link .e{right:auto;left:4px}
+.link .e svg{width:14px;height:14px}
+.links.editing .x,.links.editing .e{display:grid}
 .links.editing .link:not(.add-tile){animation:wob .35s ease-in-out infinite alternate}
 @keyframes wob{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
 .add-tile{border:1.5px dashed var(--line);color:var(--muted)}
@@ -403,7 +405,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
     <form class="linkform" id="linkform" hidden autocomplete="off">
       <input id="l-name" placeholder="Namn, t.ex. SVT Nyheter" aria-label="Namn">
       <input id="l-url" placeholder="Adress, t.ex. svt.se" aria-label="Adress" inputmode="url" autocapitalize="off">
-      <button class="btn primary" type="submit">Lägg till</button>
+      <button class="btn primary" type="submit" id="l-submit">Lägg till</button>
       <button class="btn" type="button" id="l-cancel">Avbryt</button>
       <p class="hint" id="l-hint">Du behöver inte skriva https:// – det läggs till automatiskt.</p>
     </form>
@@ -819,11 +821,14 @@ function renderLinks(){
     const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url)},
       el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),
       el("span",{},v.name),
-      el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
+      el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,title:"Ta bort",onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
+    const eb=el("button",{class:"e",type:"button","aria-label":"Ändra "+v.name,title:"Ändra",onclick:e=>{e.preventDefault();e.stopPropagation();openLinkForm(k)}});
+    eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+    a.prepend(eb);
     a.addEventListener("click",e=>{if($("links").classList.contains("editing"))e.preventDefault()});
     return a;
   });
-  tiles.push(el("button",{class:"link add-tile",type:"button",onclick:openLinkForm},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
+  tiles.push(el("button",{class:"link add-tile",type:"button",onclick:()=>openLinkForm()},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
   $("links").replaceChildren(...tiles);
 }
 function render(){renderNotes();renderLinks();renderSide();renderPage();renderPanel()}
@@ -1221,8 +1226,15 @@ $("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;draftProject=n
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu();else if(panelItem)closePanel()});
 
 // ---------- Länkar: lägg till / ta bort ----------
-function openLinkForm(){$("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent="Du behöver inte skriva https:// – det läggs till automatiskt.";$("l-name").focus()}
-$("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset()};
+let editLinkId=null;
+function openLinkForm(id){
+  const v=id?items[id]:null;editLinkId=v?id:null;
+  $("l-name").value=v?v.name:"";$("l-url").value=v?v.url:"";
+  $("l-submit").textContent=v?"Spara ändringar":"Lägg till";
+  $("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent=v?"Ändrar ”"+v.name+"”. Du behöver inte skriva https://.":"Du behöver inte skriva https:// – det läggs till automatiskt.";
+  $("l-name").focus();$("linkform").scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+$("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset();editLinkId=null};
 $("linkform").addEventListener("submit",e=>{
   e.preventDefault();
   let name=$("l-name").value.trim(), url=$("l-url").value.trim();
@@ -1230,9 +1242,9 @@ $("linkform").addEventListener("submit",e=>{
   if(!/^https?:\/\//i.test(url))url="https://"+url;
   try{const u=new URL(url);if(!u.hostname.includes("."))throw 0}catch(_){$("l-hint").className="hint err";$("l-hint").textContent="Adressen ser inte rätt ut. Prova till exempel smhi.se.";$("l-url").focus();return}
   if(!name)name=host(url);
-  const max=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0));
-  put(uid("l_"),{kind:"link",name,url,order:max+1});
-  $("linkform").reset(); $("linkform").hidden=true;
+  if(editLinkId&&items[editLinkId]){put(editLinkId,{...items[editLinkId],name,url});toast("Länken är ändrad")}
+  else{const max=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0));put(uid("l_"),{kind:"link",name,url,order:max+1})}
+  editLinkId=null;$("linkform").reset(); $("linkform").hidden=true;
 });
 function removeLink(id){const v=items[id];del(id);toast("Länken togs bort",()=>put(id,v))}
 const I_PEN_SM=$("edit-links").innerHTML,I_CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
