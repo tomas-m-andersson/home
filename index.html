@@ -346,6 +346,12 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lb-next{right:max(12px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
 .lb-count{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
 
+.dfail{border:1px solid color-mix(in srgb,var(--danger) 35%,var(--line));background:color-mix(in srgb,var(--danger) 7%,var(--surface));border-radius:12px;padding:12px 16px;font-size:14px}
+.dfail p{margin:0}
+.dfail ul{margin:6px 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.dfail a{color:var(--ink);font-weight:600}
+.dfail code{font-size:12.5px;background:var(--bg);padding:1px 5px;border-radius:5px}
+
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
 .dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
@@ -1669,11 +1675,11 @@ async function loadDash(force){
   if(dash.loading)return;
   if(!force&&dash.data&&dash.key===key&&Date.now()-dash.t<15*60*1000)return;
   dash.loading=true;dash.err="";if((projSection()&&route===projSection()[0]))renderPage(false);
-  const res={};let fails=0,limited=false;
+  const res={},fails=[];let limited=false;
   await Promise.all(ps.filter(x=>x.repo).map(async x=>{
-    try{res[x.repo]=await repoStats(x.repo)}catch(e){fails++;if(e===403)limited=true}
+    try{res[x.repo]=await repoStats(x.repo)}catch(e){if(e===403)limited=true;else fails.push({id:x.it.id,name:x.it.name,repo:x.repo,code:e})}
   }));
-  dash={loading:false,data:res,t:Date.now(),key,err:limited?"GitHub har tillfälligt stoppat frågor (för många på kort tid). Visar det som gick att hämta – försök igen om en stund.":fails?"Några projekt gick inte att hämta. Är repot privat behöver din token läsrätt till det.":""};
+  dash={loading:false,data:res,t:Date.now(),key,fails,err:limited?"GitHub har tillfälligt stoppat frågor (för många på kort tid). Visar det som gick att hämta – försök igen om en stund.":""};
   lsSet(K_DASH,JSON.stringify(dash));
   if((projSection()&&route===projSection()[0]))renderPage(false);
 }
@@ -1725,6 +1731,14 @@ function dashNodes(){
   if(!ps.length)return [];
   kids.push(el("div",{class:"dsec-head"},el("div",{},el("h2",{class:"label"},"Statistik"+(tagFilter?" – #"+tagFilter:"")),el("p",{class:"dsub"},dash.loading?"Hämtar statistik från GitHub…":dash.t?"Uppdaterad "+ago(new Date(dash.t).toISOString()):"")),refresh));
   if(dash.err)kids.push(el("p",{class:"hint err"},dash.err));
+  const fl=(dash.fails||[]).filter(f=>psAll.some(x=>x.it.id===f.id));
+  if(fl.length)kids.push(el("div",{class:"dfail"},
+    el("p",{},el("b",{},fl.length===1?"1 projekt gick inte att hämta från GitHub:":fl.length+" projekt gick inte att hämta från GitHub:")),
+    el("ul",{},...fl.map(f=>el("li",{},
+      el("a",{href:"#proj-"+f.id,onclick:e=>{e.preventDefault();go("proj-"+f.id)}},f.name),
+      " – letade efter ",el("code",{},f.repo),
+      f.code===404?" men hittade det inte.":" men fick fel ("+f.code+")."))),
+    el("p",{class:"dsub"},"Vanliga orsaker: repot heter något annat (rätta under pennan på projektet, fältet GitHub-repo), eller repot är privat och din token saknar läsrätt till det.")));
 
   // Siffror
   const tiles=el("div",{class:"dtiles"},
