@@ -57,7 +57,9 @@ button,input,textarea{font:inherit;color:inherit}
   display:flex;flex-direction:column;gap:26px}
 
 /* Huvud */
-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+header{display:flex;align-items:center;gap:8px}
+header .date{flex:1}
+#open-menu{margin-left:-8px}
 .date{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance;min-width:0}
 .tools{display:flex;align-items:center;gap:2px;flex-shrink:0}
 .icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center}
@@ -162,6 +164,49 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:10px;padding:6px 6px 6px 16px;display:flex;gap:12px;align-items:center;z-index:60;max-width:calc(100% - 32px)}
 .toast .btn{color:var(--bg)}
 
+/* Sidomeny */
+.drawer-scrim{position:fixed;inset:0;background:var(--scrim);z-index:45}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:min(380px,88vw);background:var(--surface);border-right:1px solid var(--line);z-index:46;
+  display:flex;flex-direction:column;box-shadow:var(--lift);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);
+  transform:translateX(-104%);visibility:hidden;transition:transform .24s ease,visibility 0s .24s}
+body.menu-open .drawer{transform:none;visibility:visible;transition:transform .24s ease}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:14px 10px 8px 20px}
+.drawer-head h2{font-family:var(--f-display);font-size:24px;margin:0;letter-spacing:-.01em}
+.drawer-body{flex:1;overflow:auto;padding:4px 14px 28px;display:flex;flex-direction:column;gap:22px;overscroll-behavior:contain}
+.msec{display:flex;flex-direction:column;gap:4px}
+.msec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 6px;min-height:34px}
+.msec-head .label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:600;padding:6px 8px;border-radius:7px;cursor:pointer;min-height:32px}
+.mini:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.mlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.mrow{display:flex;align-items:center;gap:6px;border-radius:9px;padding-right:4px}
+.mrow:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.mrow>a:first-child{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 6px;text-decoration:none;color:var(--ink)}
+.mrow .mname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.mrow .msub{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+.mono.sm{width:32px;height:32px;border-radius:9px;font-size:15px;flex-shrink:0}
+.chip{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.chip:hover{border-color:var(--accent)}
+.xs{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;flex-shrink:0;line-height:1;font-size:15px}
+.mempty{margin:0;padding:4px 6px;color:var(--muted);font-size:13.5px}
+.madd{align-self:flex-start;margin-left:2px}
+.mform{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);margin-top:4px}
+.mform input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--surface);width:100%;min-width:0}
+.mform .row{justify-content:flex-start}
+.medit{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 6px 6px}
+.medit input{flex:1 1 160px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);font-weight:600}
+.repos{display:flex;flex-direction:column;gap:2px;max-height:280px;overflow:auto;border-top:1px solid var(--line);padding-top:6px}
+.repo{display:flex;align-items:center;gap:10px;text-align:left;border:0;background:transparent;border-radius:8px;padding:7px 8px;cursor:pointer;width:100%}
+.repo:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.repo[disabled]{opacity:.5;cursor:default}
+.repo b{font-weight:600;display:block}
+.repo small{color:var(--muted);display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.repo>span{min-width:0;flex:1}
+.newsec{border:1.5px dashed var(--line);border-radius:var(--r);padding:12px;color:var(--muted);background:transparent;cursor:pointer;font-weight:600;width:100%}
+.newsec:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
+@media (prefers-reduced-motion:reduce){.drawer,body.menu-open .drawer{transition:none}}
+
 @media (max-width:600px){
   body{font-size:16px}
   input,textarea{font-size:16px!important}  /* hindrar iPhone från att zooma in */
@@ -184,6 +229,9 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 <body>
 <div class="wrap">
   <header>
+    <button class="icon-btn" id="open-menu" type="button" aria-label="Öppna menyn" aria-controls="menu" aria-expanded="false" title="Meny">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+    </button>
     <h1 class="date"><span id="today">Idag</span></h1>
     <div class="tools">
       <button class="sync" id="sync" type="button" title="Visa sparstatus"><i class="dot"></i><span>Ansluter…</span></button>
@@ -221,6 +269,15 @@ body.dragging,body.dragging *{cursor:grabbing!important}
     <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
   </section>
 </div>
+
+<!-- Sidomeny -->
+<div class="drawer-scrim" id="menu-scrim" hidden></div>
+<aside class="drawer" id="menu" aria-labelledby="menu-h">
+  <div class="drawer-head"><h2 id="menu-h">Meny</h2>
+    <button class="icon-btn" id="menu-close" type="button" aria-label="Stäng menyn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="drawer-body" id="menu-body"></div>
+</aside>
 
 <!-- Redigera anteckning -->
 <div class="scrim" id="note-scrim" hidden>
@@ -322,18 +379,22 @@ if(darkMQ.addEventListener)darkMQ.addEventListener("change",applyTheme);
 applyTheme();
 
 // ---------- Filformat i data.json ----------
-// { "notes": [ {id, title, text, color, pinned, order, created, updated} ], "links": [ {id, name, url, order} ] }
+// { "notes": [ {id, title, text, color, pinned, order, created, updated} ], "links": [ {id, name, url, order} ],
+//   "sections": [ {id, title, order, items: [ {id, name, url, site?, desc?} ]} ] }
+let fileExtra={};       // okända fält i data.json sparas orörda
 function toMap(file){
   const m={}; if(!file)return m;
+  fileExtra={};for(const k in file)if(!["notes","links","sections"].includes(k))fileExtra[k]=file[k];
+  (file.sections||[]).forEach(x=>{const {id,...r}=x;m[id]={kind:"section",...r}});
   (file.notes||[]).forEach(n=>{const {id,...r}=n;m[id]={kind:"note",...r}});
   (file.links||[]).forEach(l=>{const {id,...r}=l;m[id]={kind:"link",...r}});
   return m;
 }
 function fromMap(m){
-  const notes=[],links=[];
-  for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r})}
-  notes.sort((a,b)=>(!!b.pinned-!!a.pinned)||(ord(a)-ord(b))); links.sort((a,b)=>(a.order||0)-(b.order||0));
-  return {notes,links};
+  const notes=[],links=[],sections=[];
+  for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r});else if(kind==="section")sections.push({id,...r})}
+  notes.sort((a,b)=>(!!b.pinned-!!a.pinned)||(ord(a)-ord(b))); links.sort((a,b)=>(a.order||0)-(b.order||0)); sections.sort((a,b)=>(a.order||0)-(b.order||0));
+  return {...fileExtra,notes,links,sections};
 }
 function applyOps(m,ops){for(const o of ops){if(o.op==="put")m[o.id]=o.data;else delete m[o.id]}return m}
 
@@ -588,7 +649,149 @@ function renderLinks(){
   tiles.push(el("button",{class:"link add-tile",type:"button",onclick:openLinkForm},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
   $("links").replaceChildren(...tiles);
 }
-function render(){renderNotes();renderLinks()}
+function render(){renderNotes();renderLinks();renderMenu()}
+
+
+// ---------- Sidomeny: Projekt + egna sektioner ----------
+let menuEdit=null, menuAdd=null, menuNewSec=false, menuDirty=false, repoCache=null, repoErr="", repoOpen=false;
+function sectionList(){
+  const s=Object.entries(items).filter(([,v])=>v.kind==="section").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  if(!s.length)return [["s_projekt",{kind:"section",title:"Projekt",order:1,items:[]}]];   // visas tills du lagt till något
+  return s;
+}
+function getSection(id){const f=sectionList().find(([k])=>k===id);return f?f[1]:null}
+function saveSection(id,sec){put(id,{...sec,kind:"section"})}
+function openMenu(){document.body.classList.add("menu-open");$("menu-scrim").hidden=false;$("open-menu").setAttribute("aria-expanded","true");renderMenu(true);setTimeout(()=>$("menu-close").focus(),50)}
+function closeMenu(){document.body.classList.remove("menu-open");$("menu-scrim").hidden=true;$("open-menu").setAttribute("aria-expanded","false");menuAdd=null;menuNewSec=false;menuEdit=null;repoOpen=false;renderMenu(true);$("open-menu").focus()}
+$("open-menu").onclick=openMenu;
+$("menu-close").onclick=closeMenu;
+$("menu-scrim").onclick=closeMenu;
+
+function siteFor(r){
+  if(r.has_pages)return r.name.toLowerCase()===(GH.owner+".github.io").toLowerCase()?"https://"+GH.owner+".github.io/":"https://"+GH.owner+".github.io/"+r.name+"/";
+  return r.homepage||"";
+}
+async function loadRepos(){
+  repoErr="";repoOpen=true;
+  if(!repoCache){
+    renderMenu(true);
+    try{
+      const r=await fetch("https://api.github.com/users/"+GH.owner+"/repos?per_page=100&sort=pushed",{headers:{"Accept":"application/vnd.github+json"},cache:"no-store"});
+      if(!r.ok)throw r.status;
+      repoCache=(await r.json()).filter(x=>!x.fork);
+    }catch(e){repoErr="Kunde inte hämta dina projekt från GitHub. Kontrollera nätet och försök igen.";repoCache=null}
+  }
+  renderMenu(true);
+}
+function menuRow(sid,sec,it){
+  const a=el("a",{href:it.url,target:"_blank",rel:"noopener",title:it.url},
+    el("span",{class:"mono sm",style:"background:"+MONO[(it.name.charCodeAt(0)+it.name.length)%MONO.length]},(it.name.trim()[0]||"?").toUpperCase()),
+    el("span",{class:"mname"},it.name,it.desc?el("span",{class:"msub"},it.desc):el("span",{class:"msub"},host(it.url))));
+  const li=el("li",{class:"mrow"},a);
+  if(it.site)li.append(el("a",{class:"chip",href:it.site,target:"_blank",rel:"noopener",title:it.site},"Sida"));
+  if(menuEdit===sid)li.append(el("button",{class:"xs",type:"button","aria-label":"Ta bort "+it.name,onclick:()=>{
+    const before={...sec};saveSection(sid,{...sec,items:sec.items.filter(x=>x.id!==it.id)});toast("Länken togs bort",()=>saveSection(sid,before));
+  }},"×"));
+  return li;
+}
+function addForm(sid,sec){
+  const f=el("form",{class:"mform",autocomplete:"off"});
+  const name=el("input",{id:"m-name",placeholder:"Namn, t.ex. Veckomeny","aria-label":"Namn"});
+  const url=el("input",{id:"m-url",placeholder:"Adress, t.ex. github.com/…","aria-label":"Adress",inputmode:"url",autocapitalize:"off"});
+  const hint=el("p",{class:"hint"},"Du behöver inte skriva https://.");
+  f.append(name,url,hint,el("div",{class:"row"},
+    el("button",{class:"btn primary",type:"submit"},"Lägg till"),
+    el("button",{class:"btn",type:"button",onclick:()=>{menuAdd=null;repoOpen=false;renderMenu(true)}},"Avbryt"),
+    el("button",{class:"btn outline",type:"button",onclick:loadRepos},"Välj från GitHub")));
+  f.addEventListener("submit",e=>{
+    e.preventDefault();
+    let n=name.value.trim(),u=url.value.trim();
+    if(!u){hint.className="hint err";hint.textContent="Skriv in en adress.";url.focus();return}
+    if(!/^https?:\/\//i.test(u))u="https://"+u;
+    try{const x=new URL(u);if(!x.hostname.includes("."))throw 0}catch(_){hint.className="hint err";hint.textContent="Adressen ser inte rätt ut.";url.focus();return}
+    if(!n)n=host(u);
+    saveSection(sid,{...sec,items:[...(sec.items||[]),{id:uid("i_"),name:n,url:u}]});
+    menuAdd=null;repoOpen=false;renderMenu(true);
+  });
+  if(repoOpen){
+    const box=el("div",{class:"repos"});
+    if(repoErr)box.append(el("p",{class:"hint err"},repoErr));
+    else if(!repoCache)box.append(el("p",{class:"hint"},"Hämtar dina projekt…"));
+    else if(!repoCache.length)box.append(el("p",{class:"hint"},"Hittade inga publika projekt."));
+    else repoCache.forEach(r=>{
+      const have=(sec.items||[]).some(x=>x.url===r.html_url);
+      box.append(el("button",{class:"repo",type:"button",...(have?{disabled:""}:{}),onclick:()=>{
+        const cur=getSection(sid)||sec;
+        const item={id:uid("i_"),name:r.name,url:r.html_url};
+        const site=siteFor(r);if(site)item.site=site;
+        if(r.description)item.desc=r.description;
+        saveSection(sid,{...cur,items:[...(cur.items||[]),item]});
+        renderMenu(true);
+      }},el("span",{class:"mono sm",style:"background:"+MONO[(r.name.charCodeAt(0)+r.name.length)%MONO.length]},r.name[0].toUpperCase()),
+        el("span",{},el("b",{},r.name),el("small",{},have?"Redan tillagd":(r.description||(r.private?"Privat":"Publikt projekt")))))) ;
+    });
+    f.append(el("p",{class:"hint"},"Tryck på ett projekt för att lägga till det. Har projektet en GitHub Pages-sida får det även en ”Sida”-knapp."),box);
+  }
+  return f;
+}
+function moveSection(sid,delta){
+  const list=sectionList().map(([k,v])=>[k,v]);
+  const i=list.findIndex(([k])=>k===sid),j=i+delta;if(j<0||j>=list.length)return;
+  const [m]=list.splice(i,1);list.splice(j,0,m);
+  list.forEach(([k,v],n)=>{if(v.order!==n+1||!items[k]){items[k]={...v,order:n+1};pending.push({op:"put",id:k,data:items[k]})}});
+  commit();
+}
+function renderMenu(force){
+  const body=$("menu-body");
+  const a=document.activeElement;
+  if(!force&&body.contains(a)&&(a.tagName==="INPUT")){menuDirty=true;return}
+  menuDirty=false;
+  const keepScroll=body.scrollTop;
+  const blocks=sectionList().map(([sid,sec],idx,arr)=>{
+    const editingThis=menuEdit===sid;
+    const head=el("div",{class:"msec-head"},el("h3",{class:"label"},sec.title||"Namnlös"),
+      el("button",{class:"mini",type:"button",onclick:()=>{menuEdit=editingThis?null:sid;menuAdd=null;repoOpen=false;renderMenu(true)}},editingThis?"Klar":"Redigera"));
+    const wrap=el("section",{class:"msec"},head);
+    if(editingThis){
+      const t=el("input",{value:sec.title||"","aria-label":"Sektionens namn",id:"m-title-"+sid});
+      const saveTitle=()=>{const v=t.value.trim();if(v&&v!==sec.title)saveSection(sid,{...sec,title:v})};
+      t.addEventListener("change",saveTitle);
+      t.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();t.blur()}});
+      wrap.append(el("div",{class:"medit"},t,
+        el("button",{class:"xs",type:"button","aria-label":"Flytta upp",title:"Flytta upp",...(idx===0?{disabled:""}:{}),onclick:()=>moveSection(sid,-1)},"↑"),
+        el("button",{class:"xs",type:"button","aria-label":"Flytta ner",title:"Flytta ner",...(idx===arr.length-1?{disabled:""}:{}),onclick:()=>moveSection(sid,1)},"↓"),
+        el("button",{class:"mini",type:"button",style:"color:var(--danger)",onclick:()=>{
+          const before={...sec};menuEdit=null;if(items[sid])del(sid);else renderMenu(true);
+          toast("Sektionen ”"+(sec.title||"")+"” togs bort",()=>saveSection(sid,before));
+        }},"Ta bort sektion")));
+    }
+    const list=el("ul",{class:"mlist"},...(sec.items||[]).map(it=>menuRow(sid,sec,it)));
+    if((sec.items||[]).length)wrap.append(list);
+    else wrap.append(el("p",{class:"mempty"},sid==="s_projekt"?"Inga projekt än. Lägg till dina GitHub-projekt här.":"Inga länkar än."));
+    if(menuAdd===sid)wrap.append(addForm(sid,sec));
+    else wrap.append(el("button",{class:"mini madd",type:"button",onclick:()=>{menuAdd=sid;menuEdit=null;repoOpen=false;renderMenu(true);setTimeout(()=>{const n=$("m-name");if(n)n.focus()},30)}},"+ Lägg till länk"));
+    return wrap;
+  });
+  if(menuNewSec){
+    const f=el("form",{class:"mform",autocomplete:"off"});
+    const t=el("input",{id:"m-newsec",placeholder:"Namn på sektionen, t.ex. Skola","aria-label":"Namn på ny sektion"});
+    f.append(t,el("div",{class:"row"},el("button",{class:"btn primary",type:"submit"},"Skapa sektion"),el("button",{class:"btn",type:"button",onclick:()=>{menuNewSec=false;renderMenu(true)}},"Avbryt")));
+    f.addEventListener("submit",e=>{
+      e.preventDefault();const v=t.value.trim();if(!v){t.focus();return}
+      const list=sectionList();
+      // Om "Projekt" bara visas (inte sparad än) sparas den först så att den ligger kvar
+      list.forEach(([k,sv])=>{if(!items[k]){items[k]=sv;pending.push({op:"put",id:k,data:sv})}});
+      const max=Math.max(0,...list.map(([,sv])=>sv.order||0));
+      menuNewSec=false;
+      put(uid("s_"),{kind:"section",title:v,order:max+1,items:[]});
+    });
+    blocks.push(f);
+    setTimeout(()=>t.focus(),30);
+  }else blocks.push(el("button",{class:"newsec",type:"button",onclick:()=>{menuNewSec=true;menuAdd=null;menuEdit=null;renderMenu(true)}},"+ Ny sektion"));
+  body.replaceChildren(...blocks);
+  body.scrollTop=keepScroll;
+}
+$("menu-body").addEventListener("focusout",()=>setTimeout(()=>{if(menuDirty&&!$("menu-body").contains(document.activeElement))renderMenu(true)},0));
 
 // ---------- Färgväljare ----------
 function swatches(box,get,set){
@@ -615,7 +818,7 @@ $("q-text").addEventListener("input",e=>{e.target.style.height="auto";e.target.s
 quick.addEventListener("submit",e=>{e.preventDefault();qSave()});
 quick.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();qSave()}if(e.key==="Escape")qReset()});
 $("q-cancel").onclick=qReset;
-document.addEventListener("pointerdown",e=>{if(quick.classList.contains("open")&&!quick.contains(e.target)&&$("set-scrim").hidden)qSave()});
+document.addEventListener("pointerdown",e=>{if(quick.classList.contains("open")&&!quick.contains(e.target)&&$("set-scrim").hidden&&!document.body.classList.contains("menu-open"))qSave()});
 
 // ---------- Redigera anteckning ----------
 let dColor="plain";
@@ -641,7 +844,7 @@ function removeNote(id,n){del(id);toast("Anteckningen togs bort",()=>put(id,n))}
 $("dlg").addEventListener("submit",e=>{e.preventDefault();closeNote()});
 $("note-scrim").addEventListener("mousedown",e=>{if(e.target===$("note-scrim"))closeNote()});
 $("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;$("note-scrim").hidden=true;if(n)removeNote(id,n)};
-document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings();else if(document.body.classList.contains("menu-open"))closeMenu()});
 
 // ---------- Länkar: lägg till / ta bort ----------
 function openLinkForm(){$("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent="Du behöver inte skriva https:// – det läggs till automatiskt.";$("l-name").focus()}
