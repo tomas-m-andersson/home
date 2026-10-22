@@ -1,0 +1,27 @@
+{
+  "notes": [
+    {
+      "id": "n_welcome",
+      "title": "Välkommen!",
+      "text": "Skriv en ny anteckning i rutan högst upp.\nKlicka på en anteckning för att ändra eller ta bort den.\nNålen fäster den överst.",
+      "color": "sage",
+      "pinned": true,
+      "created": 1792659600000,
+      "updated": 1792659600000
+    },
+    {
+      "id": "n_example",
+      "title": "Handla",
+      "text": "Mjölk\nBröd\nKaffe",
+      "color": "butter",
+      "pinned": false,
+      "created": 1792659599000,
+      "updated": 1792659599000
+    }
+  ],
+  "links": [
+    { "id": "l_1", "name": "SVT Nyheter", "url": "https://www.svt.se/", "order": 1 },
+    { "id": "l_2", "name": "SMHI", "url": "https://www.smhi.se/", "order": 2 },
+    { "id": "l_3", "name": "Gmail", "url": "https://mail.google.com/", "order": 3 }
+  ]
+}

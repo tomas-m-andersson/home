@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F2F4F1">
+<title>Vardagssidan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: smal kolumn – datum, snabbanteckning, länkrad, sedan anteckningar i murverk (som Keep) */
+:root{
+  --bg:#F2F4F1; --surface:#FFFFFF; --ink:#1B2220; --muted:#5E6A66; --line:#DCE1DD;
+  --accent:#126B5F; --accent-ink:#FFFFFF; --focus:#2C8F80;
+  --n-plain:#FFFFFF; --n-sand:#F4E9D2; --n-sage:#DDEBDD; --n-sky:#D9E7F2; --n-rose:#F3DEDC; --n-butter:#F6F0C4;
+  --shadow:0 1px 2px rgba(20,30,28,.06),0 2px 8px rgba(20,30,28,.05);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
+  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2;
+  --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
+  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2;
+  --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 80px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:28px}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.date{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.date small{display:block;font-family:var(--f-body);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sync{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync{border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:8px}
+.sync.ok i{background:var(--accent)}
+.sync.busy i{background:#C9A227}
+.sync.err i{background:#C2453A}
+.sync.err span{color:#C2453A}
+.head-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.settings{background:var(--surface);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.settings h2{font-family:var(--f-display);font-size:22px;margin:0;letter-spacing:-.01em}
+.settings p{margin:0;color:var(--muted);font-size:14px}
+.settings label{font-weight:600;font-size:14px}
+.settings input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;width:100%}
+.settings .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.settings code{font-size:13px}
+
+/* Snabbanteckning */
+.quick{max-width:600px;width:100%;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.quick input,.quick textarea{display:block;width:100%;border:0;background:transparent;resize:none;padding:12px 16px}
+.quick input{font-weight:600;padding-bottom:0}
+.quick textarea{min-height:48px}
+.quick input:focus,.quick textarea:focus{outline:none}
+.quick .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 8px 12px}
+.quick:not(.open) input,.quick:not(.open) .bar{display:none}
+
+.swatches{display:flex;gap:6px}
+.sw{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+
+.btn{border:0;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:600;background:transparent}
+.btn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
+.btn.danger{color:#B3392F}
+:root[data-theme="dark"] .btn.danger{color:#F08A80}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.danger{color:#F08A80}}
+
+/* Länkar */
+section h2{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.link{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink);min-width:0}
+.link:hover{background:var(--surface);box-shadow:var(--shadow)}
+.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:19px;color:#fff}
+.link span{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.link .x{position:absolute;top:4px;right:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:none;line-height:1}
+.links.editing .x{display:block}
+.links.editing .link{animation:wob .35s ease-in-out infinite alternate}
+@keyframes wob{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
+.add-tile{border:1.5px dashed var(--line);background:transparent;cursor:pointer;color:var(--muted)}
+.add-tile .mono{background:transparent;color:var(--muted);font-size:26px;font-weight:500}
+.linkform{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.linkform input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.hint{flex-basis:100%;margin:0;font-size:13px;color:var(--muted)}
+.hint.err{color:#B3392F}
+
+/* Anteckningar */
+.notes{columns:240px;column-gap:14px}
+.note{break-inside:avoid;margin:0 0 14px;padding:14px 16px 10px;border-radius:var(--r);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;position:relative;display:flex;flex-direction:column;gap:6px}
+.note:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
+.note h3{font-family:var(--f-body);font-size:15.5px;font-weight:600;margin:0;padding-right:26px;overflow-wrap:anywhere}
+.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.note time{font-size:12px;color:var(--muted)}
+.pin{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.pin:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.pin[aria-pressed="true"]{color:var(--ink)}
+.subhead{margin:6px 0 10px}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+
+/* Dialog */
+.scrim{position:fixed;inset:0;background:rgba(10,15,14,.42);display:grid;place-items:center;z-index:20;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.dialog{width:min(560px,100%);max-height:100%;overflow:auto;border-radius:var(--r);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.dialog input,.dialog textarea{display:block;width:100%;border:0;background:transparent;padding:14px 18px 4px}
+.dialog input{font-weight:600;font-size:17px}
+.dialog textarea{min-height:180px;resize:vertical;padding-top:8px}
+.dialog input:focus,.dialog textarea:focus{outline:none}
+.dialog .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 10px 16px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:8px;padding:8px 8px 8px 16px;display:flex;gap:12px;align-items:center;z-index:30;max-width:calc(100% - 32px)}
+.toast .btn{color:var(--bg)}
+@media (prefers-reduced-motion:reduce){.links.editing .link{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1 class="date"><small id="greet">God dag</small><span id="today">Idag</span></h1>
+    <div class="head-right"><button class="sync" id="sync" type="button" title="Inställningar för GitHub"><i></i><span>Ansluter…</span></button><button class="btn" id="open-settings" type="button">Inställningar</button></div>
+  </header>
+
+  <form class="quick" id="quick" autocomplete="off">
+    <input id="q-title" placeholder="Rubrik" aria-label="Rubrik">
+    <textarea id="q-text" rows="1" placeholder="Skriv en anteckning…" aria-label="Anteckning"></textarea>
+    <div class="bar">
+      <div class="swatches" id="q-sw"></div>
+      <div><button type="button" class="btn" id="q-cancel">Avbryt</button><button type="submit" class="btn primary">Spara</button></div>
+    </div>
+  </form>
+
+  <section aria-labelledby="h-links">
+    <div class="sec-head"><h2 id="h-links">Mina länkar</h2><button class="btn" id="edit-links" type="button">Redigera</button></div>
+    <div class="links" id="links"></div>
+    <form class="linkform" id="linkform" hidden autocomplete="off">
+      <input id="l-name" placeholder="Namn, t.ex. SVT Nyheter" aria-label="Namn">
+      <input id="l-url" placeholder="Adress, t.ex. svt.se" aria-label="Adress" inputmode="url">
+      <button class="btn primary" type="submit">Lägg till</button>
+      <button class="btn" type="button" id="l-cancel">Avbryt</button>
+      <p class="hint" id="l-hint">Du behöver inte skriva https:// – det läggs till automatiskt.</p>
+    </form>
+  </section>
+
+  <section aria-labelledby="h-notes">
+    <div class="sec-head"><h2 id="h-notes">Anteckningar</h2></div>
+    <div id="pinned-wrap" hidden><h2 class="subhead">Fästa</h2><div class="notes" id="pinned"></div><h2 class="subhead">Övriga</h2></div>
+    <div class="notes" id="notes"></div>
+    <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
+  </section>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <form class="dialog" id="dlg" autocomplete="off">
+    <input id="d-title" placeholder="Rubrik" aria-label="Rubrik">
+    <textarea id="d-text" placeholder="Anteckning" aria-label="Anteckning"></textarea>
+    <div class="bar">
+      <div class="swatches" id="d-sw"></div>
+      <div><button type="button" class="btn danger" id="d-del">Ta bort</button><button type="submit" class="btn primary">Klar</button></div>
+    </div>
+  </form>
+</div>
+<div class="scrim" id="set-scrim" hidden>
+  <form class="dialog settings" id="setform" autocomplete="off">
+    <h2>Spara på GitHub</h2>
+    <p>Anteckningar och länkar sparas i filen <code>data.json</code> i repot <code>tomas-m-andersson/home</code>. För att få skriva dit behöver sidan en GitHub-token.</p>
+    <label for="s-token">GitHub-token</label>
+    <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false">
+    <p id="s-info">Token sparas bara i den här webbläsaren. Lägg in den på varje dator och mobil du använder.</p>
+    <div class="row">
+      <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
+      <button type="button" class="btn" id="s-cancel">Stäng</button>
+      <button type="submit" class="btn primary">Spara token</button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden><span id="toast-msg"></span><button class="btn" id="toast-undo" type="button">Ångra</button></div>
+
+<script>
+(function(){
+const $=s=>document.getElementById(s);
+const COLORS=["plain","sand","sage","sky","rose","butter"];
+const COLOR_NAMES={plain:"Vit",sand:"Sand",sage:"Salvia",sky:"Himmel",rose:"Rosa",butter:"Smör"};
+const MONO=["#126B5F","#2F5D8A","#8A5A2F","#6B7A2A","#9A3F4B","#3E4A47","#B0662A","#2E7A8C"];
+const GH={owner:"tomas-m-andersson",repo:"home",path:"data.json",branch:"main"};
+const API="https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/contents/"+GH.path;
+const K_TOKEN="vardagssidan.token", K_CACHE="vardagssidan.cache", K_PENDING="vardagssidan.pending";
+let items={};           // id -> data
+let pending=[];         // ändringar som inte är sparade på GitHub än
+let syncing=false, syncAgain=false, timer=null, editing=null;
+
+// ---------- Datum ----------
+function setDate(){
+  const d=new Date();
+  const t=d.toLocaleDateString("sv-SE",{weekday:"long",day:"numeric",month:"long"});
+  $("today").textContent=t.charAt(0).toUpperCase()+t.slice(1);
+  const h=d.getHours();
+  $("greet").textContent=h<5?"God natt":h<10?"God morgon":h<17?"God dag":"God kväll";
+}
+setDate(); setInterval(setDate,60000);
+
+// ---------- Lokalt minne (snabb start + osparade ändringar) ----------
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
+function token(){return (lsGet(K_TOKEN)||"").trim()}
+function saveLocal(){lsSet(K_CACHE,JSON.stringify(items));lsSet(K_PENDING,JSON.stringify(pending))}
+function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+
+// ---------- Filformat i data.json ----------
+// { "notes": [ {id, title, text, color, pinned, created, updated} ], "links": [ {id, name, url, order} ] }
+function toMap(file){
+  const m={}; if(!file)return m;
+  (file.notes||[]).forEach(n=>{const {id,...r}=n;m[id]={kind:"note",...r}});
+  (file.links||[]).forEach(l=>{const {id,...r}=l;m[id]={kind:"link",...r}});
+  return m;
+}
+function fromMap(m){
+  const notes=[],links=[];
+  for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r})}
+  notes.sort((a,b)=>(b.updated||0)-(a.updated||0)); links.sort((a,b)=>(a.order||0)-(b.order||0));
+  return {notes,links};
+}
+function applyOps(m,ops){for(const o of ops){if(o.op==="put")m[o.id]=o.data;else delete m[o.id]}return m}
+
+// ---------- GitHub ----------
+function b64dec(s){const bin=atob(s.replace(/\s/g,""));return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))}
+function b64enc(str){const by=new TextEncoder().encode(str);let bin="";for(let i=0;i<by.length;i+=0x8000)bin+=String.fromCharCode.apply(null,by.subarray(i,i+0x8000));return btoa(bin)}
+function headers(){const h={"Accept":"application/vnd.github+json"};if(token())h.Authorization="Bearer "+token();return h}
+async function ghGet(){
+  const r=await fetch(API+"?ref="+GH.branch+"&_="+Date.now(),{headers:headers(),cache:"no-store"});
+  if(r.status===404)return {file:null,sha:null};
+  if(!r.ok)throw {status:r.status};
+  const j=await r.json();
+  return {file:JSON.parse(b64dec(j.content)),sha:j.sha};
+}
+async function ghPut(file,sha){
+  const body={message:"Uppdatera anteckningar och länkar",content:b64enc(JSON.stringify(file,null,2)+"\n"),branch:GH.branch};
+  if(sha)body.sha=sha;
+  return fetch(API,{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(body)});
+}
+function status(kind,text){const s=$("sync");s.className="sync "+kind;s.querySelector("span").textContent=text}
+function errText(st){
+  if(st===401)return "Token fungerar inte – öppna Inställningar";
+  if(st===403||st===404)return "Token saknar skrivrätt till repot home";
+  return "Kunde inte nå GitHub – försöker igen";
+}
+async function sync(){
+  if(syncing){syncAgain=true;return}
+  syncing=true;
+  try{
+    for(let attempt=0;attempt<3;attempt++){
+      status("busy",pending.length?"Sparar…":"Hämtar…");
+      const {file,sha}=await ghGet();
+      const n=pending.length;
+      if(!n){items=toMap(file);saveLocal();if(!editing)render();status(token()?"ok":"err",token()?"Sparat på GitHub":"Läsläge – lägg in token för att spara");return}
+      if(!token()){items=applyOps(toMap(file),pending);saveLocal();if(!editing)render();status("err","Ej sparat – lägg in token");return}
+      const merged=applyOps(toMap(file),pending.slice(0,n));
+      const r=await ghPut(fromMap(merged),sha);
+      if(r.ok){
+        pending.splice(0,n);
+        items=applyOps(merged,pending);saveLocal();if(!editing)render();
+        status("ok","Sparat på GitHub");
+        if(!pending.length)return;
+        continue;
+      }
+      if(r.status===409||r.status===422)continue;   // någon annan sparade samtidigt – hämta igen
+      throw {status:r.status};
+    }
+  }catch(e){
+    status("err",errText(e&&e.status));
+    if(!e||!e.status||e.status>=500){clearTimeout(timer);timer=setTimeout(sync,15000)}
+  }finally{
+    syncing=false;
+    if(syncAgain){syncAgain=false;sync()}
+  }
+}
+function schedule(){clearTimeout(timer);status("busy","Osparat…");timer=setTimeout(sync,1200)}
+
+function welcome(){
+  const now=Date.now();
+  return {
+    "n_welcome":{kind:"note",title:"Välkommen!",text:"Skriv en ny anteckning i rutan högst upp.\nKlicka på en anteckning för att ändra eller ta bort den.\nNålen fäster den överst.",color:"sage",pinned:true,created:now,updated:now},
+    "l_1":{kind:"link",name:"SVT Nyheter",url:"https://www.svt.se/",order:1}
+  };
+}
+function put(id,data){items[id]=data;pending.push({op:"put",id,data});saveLocal();render();schedule()}
+function del(id){delete items[id];pending.push({op:"del",id});saveLocal();render();schedule()}
+
+// ---------- Rendering ----------
+function el(tag,attrs,...kids){const e=document.createElement(tag);for(const k in attrs||{}){if(k==="class")e.className=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}for(const c of kids)if(c!=null)e.append(c);return e}
+function rel(ts){
+  const d=new Date(ts),n=new Date();
+  if(d.toDateString()===n.toDateString())return "Idag "+d.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
+  const y=new Date(n);y.setDate(n.getDate()-1);
+  if(d.toDateString()===y.toDateString())return "Igår";
+  return d.toLocaleDateString("sv-SE",{day:"numeric",month:"short"});
+}
+const PIN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
+const PIN_O='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
+
+function noteEl(id,n){
+  const pin=el("button",{class:"pin",type:"button","aria-pressed":String(!!n.pinned),"aria-label":n.pinned?"Lossa":"Fäst överst",title:n.pinned?"Lossa":"Fäst överst",
+    onclick:e=>{e.stopPropagation();put(id,{...n,pinned:!n.pinned})}});
+  pin.innerHTML=n.pinned?PIN:PIN_O;
+  const card=el("article",{class:"note",tabindex:"0",style:"background:var(--n-"+(n.color||"plain")+")",
+    onclick:()=>openNote(id),onkeydown:e=>{if(e.key==="Enter")openNote(id)}},
+    n.title?el("h3",{},n.title):null, n.text?el("p",{},n.text):null, el("time",{},rel(n.updated||n.created)), pin);
+  return card;
+}
+function host(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
+function render(){
+  const all=Object.entries(items);
+  const notes=all.filter(([,v])=>v.kind==="note").sort((a,b)=>(b[1].updated||0)-(a[1].updated||0));
+  const pinned=notes.filter(([,v])=>v.pinned), rest=notes.filter(([,v])=>!v.pinned);
+  $("pinned").replaceChildren(...pinned.map(([k,v])=>noteEl(k,v)));
+  $("notes").replaceChildren(...rest.map(([k,v])=>noteEl(k,v)));
+  $("pinned-wrap").hidden=!pinned.length||!rest.length;
+  if(pinned.length&&!rest.length){$("notes").replaceChildren(...pinned.map(([k,v])=>noteEl(k,v)))}
+  $("empty").hidden=notes.length>0;
+
+  const links=all.filter(([,v])=>v.kind==="link").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  const tiles=links.map(([k,v],i)=>{
+    const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url)},
+      el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),
+      el("span",{},v.name),
+      el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
+    a.addEventListener("click",e=>{if($("links").classList.contains("editing"))e.preventDefault()});
+    return a;
+  });
+  tiles.push(el("button",{class:"link add-tile",type:"button",onclick:openLinkForm},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
+  $("links").replaceChildren(...tiles);
+}
+
+// ---------- Färgväljare ----------
+function swatches(box,get,set){
+  box.replaceChildren(...COLORS.map(c=>{
+    const b=el("button",{class:"sw",type:"button",style:"background:var(--n-"+c+")","aria-label":COLOR_NAMES[c],title:COLOR_NAMES[c],"aria-pressed":String(get()===c)});
+    b.onclick=()=>{set(c);[...box.children].forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+    return b;
+  }));
+}
+
+// ---------- Snabbanteckning ----------
+let qColor="plain";
+const quick=$("quick");
+function qOpen(){quick.classList.add("open");swatches($("q-sw"),()=>qColor,c=>{qColor=c;quick.style.background="var(--n-"+c+")"})}
+function qReset(){$("q-title").value="";$("q-text").value="";qColor="plain";quick.style.background="";quick.classList.remove("open");$("q-text").style.height=""}
+function qSave(){
+  const title=$("q-title").value.trim(), text=$("q-text").value.trim();
+  if(title||text){const now=Date.now();put(uid("n_"),{kind:"note",title,text,color:qColor,pinned:false,created:now,updated:now})}
+  qReset();
+}
+$("q-text").addEventListener("focus",qOpen);
+$("q-title").addEventListener("focus",qOpen);
+$("q-text").addEventListener("input",e=>{e.target.style.height="auto";e.target.style.height=e.target.scrollHeight+"px"});
+quick.addEventListener("submit",e=>{e.preventDefault();qSave()});
+quick.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();qSave()}if(e.key==="Escape")qReset()});
+$("q-cancel").onclick=qReset;
+document.addEventListener("mousedown",e=>{if(quick.classList.contains("open")&&!quick.contains(e.target))qSave()});
+
+// ---------- Redigera anteckning ----------
+let dColor="plain";
+function openNote(id){
+  const n=items[id]; if(!n)return;
+  editing=id; dColor=n.color||"plain";
+  $("d-title").value=n.title||""; $("d-text").value=n.text||"";
+  $("dlg").style.background="var(--n-"+dColor+")";
+  swatches($("d-sw"),()=>dColor,c=>{dColor=c;$("dlg").style.background="var(--n-"+c+")"});
+  $("scrim").hidden=false; $("d-text").focus();
+}
+function closeNote(){
+  if(!editing)return;
+  const n=items[editing], title=$("d-title").value.trim(), text=$("d-text").value.trim();
+  const id=editing; editing=null; $("scrim").hidden=true;
+  if(!n)return;
+  if(!title&&!text){removeNote(id,n);return}
+  if(title!==(n.title||"")||text!==(n.text||"")||dColor!==(n.color||"plain"))
+    put(id,{...n,title,text,color:dColor,updated:Date.now()});
+}
+function removeNote(id,n){del(id);toast("Anteckningen togs bort",()=>put(id,n))}
+$("dlg").addEventListener("submit",e=>{e.preventDefault();closeNote()});
+$("scrim").addEventListener("mousedown",e=>{if(e.target===$("scrim"))closeNote()});
+$("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;$("scrim").hidden=true;if(n)removeNote(id,n)};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&editing)closeNote()});
+
+// ---------- Länkar ----------
+function openLinkForm(){$("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent="Du behöver inte skriva https:// – det läggs till automatiskt.";$("l-name").focus()}
+$("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset()};
+$("linkform").addEventListener("submit",e=>{
+  e.preventDefault();
+  let name=$("l-name").value.trim(), url=$("l-url").value.trim();
+  if(!url){$("l-hint").className="hint err";$("l-hint").textContent="Skriv in en adress, till exempel svt.se.";$("l-url").focus();return}
+  if(!/^https?:\/\//i.test(url))url="https://"+url;
+  try{const u=new URL(url);if(!u.hostname.includes("."))throw 0}catch(_){$("l-hint").className="hint err";$("l-hint").textContent="Adressen ser inte rätt ut. Prova till exempel smhi.se.";$("l-url").focus();return}
+  if(!name)name=host(url);
+  const max=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0));
+  put(uid("l_"),{kind:"link",name,url,order:max+1});
+  $("linkform").reset(); $("linkform").hidden=true;
+});
+function removeLink(id){const v=items[id];del(id);toast("Länken togs bort",()=>put(id,v))}
+$("edit-links").onclick=()=>{const on=$("links").classList.toggle("editing");$("edit-links").textContent=on?"Klar":"Redigera"};
+
+// ---------- Toast ----------
+let tTimer;
+function toast(msg,undo){
+  $("toast-msg").textContent=msg; $("toast-undo").hidden=!undo;
+  $("toast-undo").onclick=()=>{undo&&undo();$("toast").hidden=true};
+  $("toast").hidden=false; clearTimeout(tTimer); tTimer=setTimeout(()=>$("toast").hidden=true,5000);
+}
+
+// ---------- Inställningar ----------
+function openSettings(){$("s-token").value=token();$("set-scrim").hidden=false;$("s-token").focus()}
+function closeSettings(){$("set-scrim").hidden=true}
+$("open-settings").onclick=openSettings;
+$("sync").onclick=openSettings;
+$("s-cancel").onclick=closeSettings;
+$("set-scrim").addEventListener("mousedown",e=>{if(e.target===$("set-scrim"))closeSettings()});
+$("setform").addEventListener("submit",e=>{e.preventDefault();lsSet(K_TOKEN,$("s-token").value.trim()||null);closeSettings();sync()});
+$("s-remove").onclick=()=>{lsSet(K_TOKEN,null);$("s-token").value="";closeSettings();sync()};
+
+// ---------- Start ----------
+try{items=JSON.parse(lsGet(K_CACHE)||"null")||{}}catch(e){items={}}
+try{pending=JSON.parse(lsGet(K_PENDING)||"[]")||[]}catch(e){pending=[]}
+render();
+sync();
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!editing)sync()});
+window.addEventListener("beforeunload",e=>{if(pending.length){e.preventDefault();e.returnValue=""}});
+})();
+</script>
