@@ -305,6 +305,11 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .repo small{color:var(--muted);display:block;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .repo>span{min-width:0;flex:1}
 
+.ibtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0;text-decoration:none;position:relative;z-index:1}
+.ibtn:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
+.ibtn.primary{color:var(--accent)}
+.ibtn.primary:hover{border-color:var(--accent);color:var(--accent)}
+.ibtn svg{width:18px;height:18px}
 .chip-btn{background:transparent;color:var(--muted);cursor:pointer;font:inherit;font-size:12px;font-weight:600}
 .chip-btn:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
 .flab{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
@@ -1218,7 +1223,7 @@ async function loadRepos(){
 const openCards=new Set();
 function card(sid,sec,it){
   const link=linkOf(it),open=openCards.has(it.id);
-  const toggle=()=>{if(openCards.has(it.id))openCards.delete(it.id);else openCards.add(it.id);renderPage(true)};
+  const toggle=()=>{if(openCards.has(it.id))openCards.delete(it.id);else{if(!c.classList.contains("has-desc"))return;openCards.add(it.id)}renderPage(true)};
   const imgs=it.images||[],more=!!(it.desc||imgs.length);
   const head=el("button",{class:"top",type:"button","aria-expanded":String(open),"aria-label":it.name+(more?(open?", fäll ihop":", visa mer"):"")},monoFor(it.name),
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},host(link))));
@@ -1229,8 +1234,9 @@ function card(sid,sec,it){
   if(it.desc)c.append(el("p",{class:"desc"},it.desc));
   if(open&&imgs.length)c.append(gallery(imgs));
   const acts=el("div",{class:"acts"});
-  acts.append(el("a",{class:"chip",href:link,target:"_blank",rel:"noopener",title:link},"Öppna sidan"));
-  acts.append(el("button",{class:"chip chip-btn",type:"button","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}},"Ändra"));
+  const ob=el("a",{class:"ibtn primary",href:link,target:"_blank",rel:"noopener",title:"Öppna sidan – "+link,"aria-label":"Öppna "+it.name});ob.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  const eb=el("button",{class:"ibtn",type:"button",title:"Ändra","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}});eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+  acts.append(ob,eb);
   if(imgs.length&&!open)acts.insertAdjacentHTML("beforeend",'<span class="imgcount" title="'+imgs.length+(imgs.length===1?' bild':' bilder')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.5"/></svg>'+imgs.length+'</span>');
   c.append(acts);
   if(secEdit)c.append(el("button",{class:"xs",type:"button","aria-label":"Ta bort "+it.name,onclick:()=>{
@@ -1368,7 +1374,13 @@ function renderPage(force){
     bar.hidden=false;
   }else{bar.hidden=true;bar.replaceChildren()}
   const cards=list.map(it=>card(sid,sec,it));
-  setTimeout(()=>hydrateImgs($("view-section")),0);
+  setTimeout(()=>{
+    hydrateImgs($("view-section"));
+    document.querySelectorAll("#sec-cards .card:not(.has-desc):not(.card-add)").forEach(c=>{
+      const n=c.querySelector(".name");
+      if(c.classList.contains("open")||(n&&n.scrollWidth>n.clientWidth+1)){c.classList.add("has-desc");c.querySelector(".top").insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>')}
+    });
+  },0);
   if(secAdd!==true)cards.push(el("button",{class:"card card-add",type:"button",onclick:()=>{secAdd=true;repoOpen=false;renderPage(true);focusForm()}},"+ Lägg till"));
   $("sec-cards").replaceChildren(...cards);
   $("sec-form").replaceChildren(...(secAdd?[addForm(sid,sec)]:list.length?[]:[el("p",{class:"sec-empty"},sid==="s_projekt"?"Inga projekt än. Tryck på ”+ Lägg till” och sedan ”Välj från GitHub”.":"Inga länkar än.")]));
