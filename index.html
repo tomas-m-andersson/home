@@ -176,7 +176,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 
 .settings{padding:0 0 8px}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 10px 6px 22px;position:sticky;top:0;background:var(--surface);z-index:1}
-.sheet-head h2{font-family:var(--f-display);font-size:24px;margin:0;letter-spacing:-.01em}
+.sheet-head h2{font-family:var(--f-body);font-weight:600;font-size:22px;margin:0;letter-spacing:0}
 .set-sec{padding:14px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
 .set-sec:first-of-type{border-top:0}
 .set-sec p{margin:0;color:var(--muted);font-size:14px}
@@ -199,7 +199,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .back:hover{color:var(--ink);background:color-mix(in srgb,var(--ink) 6%,transparent)}
 .back svg{width:18px;height:18px}
 .page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.page-title{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,5vw,32px);letter-spacing:-.015em;margin:0;min-width:0;overflow-wrap:anywhere}
+.page-title{font-family:var(--f-body);font-weight:600;font-size:clamp(24px,5vw,30px);letter-spacing:0;margin:0;min-width:0;overflow-wrap:anywhere}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .card{position:relative;display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow);min-width:0}
 .card:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
@@ -229,7 +229,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .collapsed .s-head{padding:0;justify-content:center}
 .s-logo{width:28px;height:28px;border-radius:8px;background:#126B5F;display:grid;place-items:center;flex-shrink:0}
 .s-logo i{width:12px;height:14px;background:#F2F4F1;border-radius:2px}
-.s-title{flex:1;min-width:0;font-family:var(--f-body);font-weight:600;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-title{flex:1;min-width:0;font-family:var(--f-body);font-weight:600;font-size:14px;letter-spacing:.09em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s-toggle{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
 .collapsed .s-toggle{width:44px;height:44px;border-radius:10px}
 .s-toggle:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
@@ -293,7 +293,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .pp-head{display:flex;align-items:flex-start;gap:12px}
 .pp-head .mono{width:40px;height:40px;border-radius:10px;font-size:18px;flex-shrink:0}
 .pp-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.pp-name h2{margin:0;font-family:var(--f-display);font-size:19px;font-weight:700;letter-spacing:-.01em;overflow-wrap:anywhere}
+.pp-name h2{margin:0;font-family:var(--f-body);font-size:18px;font-weight:600;letter-spacing:0;overflow-wrap:anywhere}
 .pp-name a{font-size:12.5px;color:var(--accent);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pp-name a:hover{text-decoration:underline}
 .pp-desc{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
