@@ -359,6 +359,9 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 
 .mono.has-img{background:var(--surface)!important;border:1px solid var(--line);overflow:hidden;padding:0}
 .mono.has-img img{width:100%;height:100%;object-fit:cover;display:block}
+.mono.fav img{object-fit:contain}
+.mono.fav-small{padding:22%}
+.mono.fav-small img{image-rendering:auto}
 .mono.lg{width:56px;height:56px;border-radius:14px;font-size:24px;flex-shrink:0}
 .icon-edit{display:flex;align-items:flex-start;gap:14px}
 .icon-ctrls{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
@@ -1198,7 +1201,7 @@ function renderLinks(){
   const links=Object.entries(items).filter(([,v])=>v.kind==="link").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
   const tiles=links.map(([k,v])=>{
     const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url)},
-      el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),
+      withFavicon(el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),v.url),
       el("span",{},v.name),
       el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,title:"Ta bort",onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
     const eb=el("button",{class:"e",type:"button","aria-label":"Ändra "+v.name,title:"Ändra",onclick:e=>{e.preventDefault();e.stopPropagation();openLinkForm(k)}});
@@ -1229,9 +1232,29 @@ function sectionList(){
 function getSection(id){const f=sectionList().find(([k])=>k===id);return f?f[1]:null}
 function saveSection(id,sec){put(id,{...sec,kind:"section"})}
 // Projektikon: egen uppladdad bild > ikon från webbsidan/repot > bokstav
-const K_ICONS="vardagssidan.icons";
+const K_ICONS="vardagssidan.icons2";
 let iconMemo={};try{iconMemo=JSON.parse(lsGet(K_ICONS)||"{}")}catch(_){}
 const iconLive=new Map();
+function probeImgW(url){return new Promise(res=>{const i=new Image();i.onload=()=>res(i.naturalWidth);i.onerror=()=>res(0);i.referrerPolicy="no-referrer";i.src=url})}
+// Webbplatsens ikon (favicon): sajtens egen apple-touch-icon, annars Googles favicon-tjänst, annars favicon.ico
+const favLive=new Map();
+function favicon(url){
+  let origin,dom;try{const u=new URL(url);origin=u.origin;dom=u.hostname}catch(_){return Promise.resolve(null)}
+  const key="fav|"+origin;
+  const m=iconMemo[key];
+  if(m&&Date.now()-m.t<7*24*3600*1000)return Promise.resolve(m.u?{u:m.u,w:m.w}:null);
+  if(favLive.has(key))return favLive.get(key);
+  const pr=(async()=>{
+    const cands=[[origin+"/apple-touch-icon.png",32],[origin+"/apple-touch-icon-precomposed.png",32],["https://www.google.com/s2/favicons?sz=128&domain="+encodeURIComponent(dom),32],[origin+"/favicon.ico",16]];
+    for(const [u,min] of cands){const w=await probeImgW(u);if(w>=min){iconMemo[key]={u,w,t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return {u,w}}}
+    iconMemo[key]={u:"",t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return null;
+  })();
+  favLive.set(key,pr);return pr;
+}
+function withFavicon(m,url){
+  favicon(url).then(f=>{if(!f)return;m.replaceChildren(el("img",{src:f.u,alt:"",referrerpolicy:"no-referrer"}));m.classList.add("has-img","fav");if(f.w<64)m.classList.add("fav-small")});
+  return m;
+}
 function probeImg(url){return new Promise(res=>{const i=new Image();i.onload=()=>res(i.naturalWidth>8?url:null);i.onerror=()=>res(null);i.referrerPolicy="no-referrer";i.src=url})}
 function iconKey(it){return (linkOf(it)||"")+"|"+(repoOf(it)||"")}
 async function findAutoIcon(it){
@@ -1251,6 +1274,7 @@ async function findAutoIcon(it){
         if(r.ok){const u=URL.createObjectURL(await r.blob());iconMemo[key]={u:"private",t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return u}}catch(_){}
     }
   }
+  if(link&&!/github\.(io|com)/i.test(link)){const f=await favicon(link);if(f){iconMemo[key]={u:f.u,t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return f.u}}
   iconMemo[key]={u:"",t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));
   return null;
 }
@@ -1688,7 +1712,7 @@ function renderProject(force){
     toolBtn("Lägg till länk",I_PLUS,()=>{pjLinkForm="new";renderProject(true);setTimeout(()=>{const x=$("pl-name");if(x&&!touchUI())x.focus()},30)})));
   if(!links.length&&!pjLinkForm)lsec.append(el("p",{class:"hint"},"Inga länkar än."));
   links.forEach(L=>{
-    const row=el("div",{class:"pj-link"},html("a",{href:L.url,target:"_blank",rel:"noopener"},null,monoFor(L.name,"sm"),el("span",{},el("b",{},L.name),el("span",{class:"pj-sub"},host(L.url)))));
+    const row=el("div",{class:"pj-link"},html("a",{href:L.url,target:"_blank",rel:"noopener"},null,withFavicon(monoFor(L.name,"sm"),L.url),el("span",{},el("b",{},L.name),el("span",{class:"pj-sub"},host(L.url)))));
     if(le)row.append(toolBtn("Ändra "+L.name,I_PEN,()=>{pjLinkForm=L.id;renderProject(true)}),toolBtn("Ta bort "+L.name,I_TRASH,()=>{
       const before=links;saveItem(sid,it.id,x=>({...x,links:(x.links||[]).filter(y=>y.id!==L.id)}));renderProject(true);
       toast("Länken togs bort",()=>{saveItem(sid,it.id,x=>({...x,links:before}));renderProject(true)});
