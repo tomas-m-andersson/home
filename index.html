@@ -3,137 +3,196 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F2F4F1">
 <title>Vardagssidan</title>
+<meta name="description" content="Anteckningar och länkar för vardagen.">
+<meta name="theme-color" content="#F2F4F1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vardag">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>
+// Sätt valt tema direkt, innan sidan ritas, så att den inte blinkar
+try{var t=localStorage.getItem("vardagssidan.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
 <style>
-/* Layout: smal kolumn – datum, snabbanteckning, länkrad, sedan anteckningar i murverk (som Keep) */
+/* Layout: smal kolumn – datum, snabbanteckning, länkrad, sedan anteckningar i flyttbart murverk (som Keep) */
 :root{
   --bg:#F2F4F1; --surface:#FFFFFF; --ink:#1B2220; --muted:#5E6A66; --line:#DCE1DD;
-  --accent:#126B5F; --accent-ink:#FFFFFF; --focus:#2C8F80;
+  --accent:#126B5F; --accent-ink:#FFFFFF; --focus:#2C8F80; --danger:#B3392F; --warn:#C9A227;
   --n-plain:#FFFFFF; --n-sand:#F4E9D2; --n-sage:#DDEBDD; --n-sky:#D9E7F2; --n-rose:#F3DEDC; --n-butter:#F6F0C4;
+  --scrim:rgba(10,15,14,.42);
   --shadow:0 1px 2px rgba(20,30,28,.06),0 2px 8px rgba(20,30,28,.05);
+  --lift:0 14px 34px rgba(20,30,28,.22);
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
   --r:10px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
-  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2;
+  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2; --danger:#F08A80; --warn:#E3C04A;
   --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
-  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141917; --surface:#1C2320; --ink:#E7ECE9; --muted:#9AA8A3; --line:#2C3632;
-  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2;
+  --accent:#4FC0AE; --accent-ink:#0E1513; --focus:#6FD3C2; --danger:#F08A80; --warn:#E3C04A;
   --n-plain:#1C2320; --n-sand:#3A3324; --n-sage:#26362B; --n-sky:#223142; --n-rose:#3D2A29; --n-butter:#3A3720;
-  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+  --scrim:rgba(0,0,0,.55); --shadow:0 1px 2px rgba(0,0,0,.3); --lift:0 14px 34px rgba(0,0,0,.55); color-scheme:dark}
 
 *{box-sizing:border-box}
-html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
 [hidden]{display:none!important}
 img{max-width:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
-.wrap{max-width:1040px;margin:0 auto;padding-block:28px 80px;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  display:flex;flex-direction:column;gap:28px}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:24px 96px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:26px}
 
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.date{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.date small{display:block;font-family:var(--f-body);font-weight:500;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.sync{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
-.sync i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
-.sync{border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:8px}
-.sync.ok i{background:var(--accent)}
-.sync.busy i{background:#C9A227}
-.sync.err i{background:#C2453A}
-.sync.err span{color:#C2453A}
-.head-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.settings{background:var(--surface);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
-.settings h2{font-family:var(--f-display);font-size:22px;margin:0;letter-spacing:-.01em}
-.settings p{margin:0;color:var(--muted);font-size:14px}
-.settings label{font-weight:600;font-size:14px}
-.settings input{border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;width:100%}
-.settings .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.settings code{font-size:13px}
+/* Huvud */
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.date{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,6vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0;text-wrap:balance;min-width:0}
+.date small{display:block;font-family:var(--f-body);font-weight:500;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.tools{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.icon-btn{width:40px;height:40px;border:0;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.icon-btn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.icon-btn svg{width:21px;height:21px}
+.sync{height:40px;border:0;background:transparent;cursor:pointer;padding:0 8px;border-radius:10px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.sync:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.ok .dot{background:var(--accent)} .busy .dot{background:var(--warn)} .err .dot{background:var(--danger)}
+.sync.err span{color:var(--danger)}
+@media (max-width:560px){.sync span{display:none}.sync{padding:0 14px}}
 
 /* Snabbanteckning */
 .quick{max-width:600px;width:100%;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
-.quick input,.quick textarea{display:block;width:100%;border:0;background:transparent;resize:none;padding:12px 16px}
+.quick input,.quick textarea{display:block;width:100%;border:0;background:transparent;resize:none;padding:13px 16px}
 .quick input{font-weight:600;padding-bottom:0}
-.quick textarea{min-height:48px}
+.quick textarea{min-height:50px}
 .quick input:focus,.quick textarea:focus{outline:none}
-.quick .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 8px 12px}
+.quick .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px 8px 12px;flex-wrap:wrap}
 .quick:not(.open) input,.quick:not(.open) .bar{display:none}
 
-.swatches{display:flex;gap:6px}
-.sw{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);cursor:pointer;padding:0}
 .sw[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 
-.btn{border:0;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:600;background:transparent}
+.btn{border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;background:transparent;min-height:38px}
 .btn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .btn.primary{background:var(--accent);color:var(--accent-ink)}
 .btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
-.btn.danger{color:#B3392F}
-:root[data-theme="dark"] .btn.danger{color:#F08A80}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.danger{color:#F08A80}}
+.btn.outline{border:1px solid var(--line)}
+.btn.danger{color:var(--danger)}
+
+/* Sektioner */
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;min-height:38px}
+.label{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0}
 
 /* Länkar */
-section h2{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0}
-.sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
-.link{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink);min-width:0}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.link{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 4px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink);min-width:0;border:1px solid transparent;background:transparent;cursor:pointer}
 .link:hover{background:var(--surface);box-shadow:var(--shadow)}
-.mono{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:19px;color:#fff}
+.mono{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:20px;color:#fff}
 .link span{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.link .x{position:absolute;top:4px;right:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:none;line-height:1}
+.link .x{position:absolute;top:2px;right:4px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:none;line-height:1;font-size:16px}
 .links.editing .x{display:block}
-.links.editing .link{animation:wob .35s ease-in-out infinite alternate}
+.links.editing .link:not(.add-tile){animation:wob .35s ease-in-out infinite alternate}
 @keyframes wob{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
-.add-tile{border:1.5px dashed var(--line);background:transparent;cursor:pointer;color:var(--muted)}
+.add-tile{border:1.5px dashed var(--line);color:var(--muted)}
 .add-tile .mono{background:transparent;color:var(--muted);font-size:26px;font-weight:500}
 .linkform{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-.linkform input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.linkform input{flex:1 1 180px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg)}
 .hint{flex-basis:100%;margin:0;font-size:13px;color:var(--muted)}
-.hint.err{color:#B3392F}
+.hint.err{color:var(--danger)}
 
-/* Anteckningar */
-.notes{columns:240px;column-gap:14px}
-.note{break-inside:avoid;margin:0 0 14px;padding:14px 16px 10px;border-radius:var(--r);border:1px solid var(--line);box-shadow:var(--shadow);cursor:pointer;position:relative;display:flex;flex-direction:column;gap:6px}
+/* Anteckningar – kolumner som fylls vänster till höger, rad för rad */
+.notes{display:flex;gap:12px;align-items:flex-start}
+.col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px}
+.note{padding:14px 16px 10px;border-radius:var(--r);border:1px solid var(--line);box-shadow:var(--shadow);cursor:grab;position:relative;display:flex;flex-direction:column;gap:6px;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:border-color .15s}
 .note:hover{border-color:color-mix(in srgb,var(--ink) 25%,var(--line))}
-.note h3{font-family:var(--f-body);font-size:15.5px;font-weight:600;margin:0;padding-right:26px;overflow-wrap:anywhere}
-.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.note h3{font-family:var(--f-body);font-size:15.5px;font-weight:600;margin:0;padding-right:28px;overflow-wrap:anywhere}
+.note p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px;max-height:22em;overflow:hidden}
 .note time{font-size:12px;color:var(--muted)}
-.pin{position:absolute;top:8px;right:8px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.note.placeholder{opacity:.28;box-shadow:none;border-style:dashed}
+.note.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;box-shadow:var(--lift);cursor:grabbing;margin:0}
+.note.press{transform:scale(.98);transition:transform .3s}
+body.dragging,body.dragging *{cursor:grabbing!important}
+.pin{position:absolute;top:6px;right:6px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;cursor:pointer;color:var(--muted);display:grid;place-items:center}
 .pin:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .pin[aria-pressed="true"]{color:var(--ink)}
-.subhead{margin:6px 0 10px}
-.empty{color:var(--muted);text-align:center;padding:24px 0}
+.subhead{margin:4px 0 10px}
+.group-gap{height:22px}
+.empty{color:var(--muted);text-align:center;padding:24px 0;margin:0}
+.tip{font-size:12.5px;color:var(--muted);margin:0}
 
-/* Dialog */
-.scrim{position:fixed;inset:0;background:rgba(10,15,14,.42);display:grid;place-items:center;z-index:20;
+/* Dialoger */
+.scrim{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;z-index:50;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.dialog{width:min(560px,100%);max-height:100%;overflow:auto;border-radius:var(--r);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.25)}
-.dialog input,.dialog textarea{display:block;width:100%;border:0;background:transparent;padding:14px 18px 4px}
-.dialog input{font-weight:600;font-size:17px}
-.dialog textarea{min-height:180px;resize:vertical;padding-top:8px}
-.dialog input:focus,.dialog textarea:focus{outline:none}
-.dialog .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px 10px 16px}
+.dialog{width:min(560px,100%);max-height:100%;overflow:auto;border-radius:12px;border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.25);background:var(--surface)}
+.note-dlg{display:flex;flex-direction:column}
+.note-dlg input,.note-dlg textarea{display:block;width:100%;border:0;background:transparent;padding:16px 18px 4px}
+.note-dlg input{font-weight:600;font-size:18px}
+.note-dlg textarea{min-height:200px;resize:vertical;padding-top:8px;flex:1}
+.note-dlg input:focus,.note-dlg textarea:focus{outline:none}
+.note-dlg .bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 12px 16px}
 
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:8px;padding:8px 8px 8px 16px;display:flex;gap:12px;align-items:center;z-index:30;max-width:calc(100% - 32px)}
+.settings{padding:0 0 8px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px 10px 6px 22px;position:sticky;top:0;background:var(--surface);z-index:1}
+.sheet-head h2{font-family:var(--f-display);font-size:24px;margin:0;letter-spacing:-.01em}
+.set-sec{padding:14px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.set-sec:first-of-type{border-top:0}
+.set-sec p{margin:0;color:var(--muted);font-size:14px}
+.set-sec label{font-weight:600;font-size:14px}
+.set-sec input{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;width:100%}
+.set-sec code{font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.state{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)!important}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.seg button{border:0;border-radius:7px;background:transparent;padding:9px 6px;cursor:pointer;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted)}
+.seg button svg{width:17px;height:17px}
+.seg button[aria-checked="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);border-radius:10px;padding:6px 6px 6px 16px;display:flex;gap:12px;align-items:center;z-index:60;max-width:calc(100% - 32px)}
 .toast .btn{color:var(--bg)}
-@media (prefers-reduced-motion:reduce){.links.editing .link{animation:none}}
+
+@media (max-width:600px){
+  body{font-size:16px}
+  input,textarea{font-size:16px!important}  /* hindrar iPhone från att zooma in */
+  .wrap{padding-block:14px 96px;gap:22px}
+  .links{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px}
+  .link{padding:10px 2px 8px}
+  .link span{font-size:12px}
+  .note{padding:12px 13px 9px}
+  .note h3{font-size:15px}
+  .note p{font-size:14.5px}
+  #note-scrim{padding:0}
+  .note-dlg{width:100%;height:100%;max-height:none;border-radius:0;border:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .note-dlg textarea{resize:none}
+  #set-scrim{place-items:end center;padding:0}
+  .settings{width:100%;max-height:92%;border-radius:16px 16px 0 0;border-bottom:0;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){.links.editing .link{animation:none}.note.press{transform:none}}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <h1 class="date"><small id="greet">God dag</small><span id="today">Idag</span></h1>
-    <div class="head-right"><button class="sync" id="sync" type="button" title="Inställningar för GitHub"><i></i><span>Ansluter…</span></button><button class="btn" id="open-settings" type="button">Inställningar</button></div>
+    <div class="tools">
+      <button class="sync" id="sync" type="button" title="Visa sparstatus"><i class="dot"></i><span>Ansluter…</span></button>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Byt mellan ljust och mörkt" title="Ljust / mörkt"></button>
+      <button class="icon-btn" id="open-settings" type="button" aria-label="Inställningar" title="Inställningar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
   </header>
 
   <form class="quick" id="quick" autocomplete="off">
@@ -146,27 +205,28 @@ section h2{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spa
   </form>
 
   <section aria-labelledby="h-links">
-    <div class="sec-head"><h2 id="h-links">Mina länkar</h2><button class="btn" id="edit-links" type="button">Redigera</button></div>
+    <div class="sec-head"><h2 class="label" id="h-links">Mina länkar</h2><button class="btn" id="edit-links" type="button">Redigera</button></div>
     <div class="links" id="links"></div>
     <form class="linkform" id="linkform" hidden autocomplete="off">
       <input id="l-name" placeholder="Namn, t.ex. SVT Nyheter" aria-label="Namn">
-      <input id="l-url" placeholder="Adress, t.ex. svt.se" aria-label="Adress" inputmode="url">
+      <input id="l-url" placeholder="Adress, t.ex. svt.se" aria-label="Adress" inputmode="url" autocapitalize="off">
       <button class="btn primary" type="submit">Lägg till</button>
       <button class="btn" type="button" id="l-cancel">Avbryt</button>
       <p class="hint" id="l-hint">Du behöver inte skriva https:// – det läggs till automatiskt.</p>
     </form>
   </section>
 
-  <section aria-labelledby="h-notes">
-    <div class="sec-head"><h2 id="h-notes">Anteckningar</h2></div>
-    <div id="pinned-wrap" hidden><h2 class="subhead">Fästa</h2><div class="notes" id="pinned"></div><h2 class="subhead">Övriga</h2></div>
+  <section aria-labelledby="h-notes" id="notes-sec">
+    <div class="sec-head"><h2 class="label" id="h-notes">Anteckningar</h2><p class="tip" id="drag-tip">Dra för att flytta</p></div>
+    <div id="pinned-wrap" hidden><h3 class="label subhead">Fästa</h3><div class="notes" id="pinned"></div><div class="group-gap"></div><h3 class="label subhead">Övriga</h3></div>
     <div class="notes" id="notes"></div>
     <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
   </section>
 </div>
 
-<div class="scrim" id="scrim" hidden>
-  <form class="dialog" id="dlg" autocomplete="off">
+<!-- Redigera anteckning -->
+<div class="scrim" id="note-scrim" hidden>
+  <form class="dialog note-dlg" id="dlg" autocomplete="off" role="dialog" aria-modal="true" aria-label="Anteckning">
     <input id="d-title" placeholder="Rubrik" aria-label="Rubrik">
     <textarea id="d-text" placeholder="Anteckning" aria-label="Anteckning"></textarea>
     <div class="bar">
@@ -175,21 +235,48 @@ section h2{font-family:var(--f-body);font-size:12.5px;font-weight:600;letter-spa
     </div>
   </form>
 </div>
+
+<!-- Inställningar -->
 <div class="scrim" id="set-scrim" hidden>
-  <form class="dialog settings" id="setform" autocomplete="off">
-    <h2>Spara på GitHub</h2>
-    <p>Anteckningar och länkar sparas i filen <code>data.json</code> i repot <code>tomas-m-andersson/home-data</code> (privat). För att läsa och spara behöver sidan en GitHub-token.</p>
-    <label for="s-token">GitHub-token</label>
-    <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false">
-    <p id="s-info">Token behöver <b>Contents: Read and write</b> på repot home-data. Den sparas bara i den här webbläsaren. Lägg in den på varje dator och mobil du använder.</p>
-    <div class="row">
-      <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
-      <button type="button" class="btn" id="s-cancel">Stäng</button>
-      <button type="submit" class="btn primary">Spara token</button>
+  <div class="dialog settings" role="dialog" aria-modal="true" aria-labelledby="set-h">
+    <div class="sheet-head"><h2 id="set-h">Inställningar</h2>
+      <button class="icon-btn" id="s-close" type="button" aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-  </form>
+
+    <section class="set-sec" aria-labelledby="s-theme-h">
+      <h3 class="label" id="s-theme-h">Utseende</h3>
+      <div class="seg" role="radiogroup" aria-label="Tema" id="theme-seg">
+        <button type="button" role="radio" data-theme-choice="auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16a8 8 0 0 0 0-16z" fill="currentColor"/></svg>Auto</button>
+        <button type="button" role="radio" data-theme-choice="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Ljust</button>
+        <button type="button" role="radio" data-theme-choice="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>Mörkt</button>
+      </div>
+      <p>Auto följer inställningen i din telefon eller dator.</p>
+    </section>
+
+    <section class="set-sec" aria-labelledby="s-gh-h">
+      <h3 class="label" id="s-gh-h">Sparas på GitHub</h3>
+      <p class="state" id="s-state"><i class="dot"></i><span>–</span></p>
+      <form id="setform" autocomplete="off" style="display:flex;flex-direction:column;gap:10px">
+        <label for="s-token">GitHub-token</label>
+        <input id="s-token" type="password" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
+        <p>Allt sparas i <code>data.json</code> i det privata repot <code>home-data</code>. Token behöver <b>Contents: Read and write</b> på home-data och sparas bara på den här enheten.</p>
+        <div class="row">
+          <button type="button" class="btn danger" id="s-remove">Ta bort token</button>
+          <button type="button" class="btn outline" id="s-sync">Synka nu</button>
+          <button type="submit" class="btn primary">Spara token</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="set-sec" aria-labelledby="s-app-h">
+      <h3 class="label" id="s-app-h">Installera som app</h3>
+      <p id="inst-text"></p>
+      <div class="row" id="inst-row" hidden><button type="button" class="btn primary" id="inst-btn">Installera Vardagssidan</button></div>
+    </section>
+  </div>
 </div>
-<div class="toast" id="toast" hidden><span id="toast-msg"></span><button class="btn" id="toast-undo" type="button">Ångra</button></div>
+
+<div class="toast" id="toast" hidden role="status"><span id="toast-msg"></span><button class="btn" id="toast-undo" type="button">Ångra</button></div>
 
 <script>
 (function(){
@@ -199,10 +286,11 @@ const COLOR_NAMES={plain:"Vit",sand:"Sand",sage:"Salvia",sky:"Himmel",rose:"Rosa
 const MONO=["#126B5F","#2F5D8A","#8A5A2F","#6B7A2A","#9A3F4B","#3E4A47","#B0662A","#2E7A8C"];
 const GH={owner:"tomas-m-andersson",repo:"home-data",path:"data.json",branch:"main"};
 const API="https://api.github.com/repos/"+GH.owner+"/"+GH.repo+"/contents/"+GH.path;
-const K_TOKEN="vardagssidan.token", K_CACHE="vardagssidan.cache", K_PENDING="vardagssidan.pending";
+const K_TOKEN="vardagssidan.token", K_CACHE="vardagssidan.cache", K_PENDING="vardagssidan.pending", K_THEME="vardagssidan.theme";
 let items={};           // id -> data
 let pending=[];         // ändringar som inte är sparade på GitHub än
 let syncing=false, syncAgain=false, timer=null, editing=null;
+let drag=null, needRender=false, suppressClick=0;
 
 // ---------- Datum ----------
 function setDate(){
@@ -214,15 +302,37 @@ function setDate(){
 }
 setDate(); setInterval(setDate,60000);
 
-// ---------- Lokalt minne (snabb start + osparade ändringar) ----------
+// ---------- Lokalt minne ----------
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
 function token(){return (lsGet(K_TOKEN)||"").trim()}
 function saveLocal(){lsSet(K_CACHE,JSON.stringify(items));lsSet(K_PENDING,JSON.stringify(pending))}
 function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 
+// ---------- Tema ----------
+const ICON_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const ICON_MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
+const darkMQ=window.matchMedia("(prefers-color-scheme: dark)");
+function themeChoice(){const t=lsGet(K_THEME);return t==="light"||t==="dark"?t:"auto"}
+function isDark(){const c=themeChoice();return c==="dark"||(c==="auto"&&darkMQ.matches)}
+function applyTheme(){
+  const c=themeChoice();
+  if(c==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",c);
+  const dark=isDark();
+  $("theme-toggle").innerHTML=dark?ICON_SUN:ICON_MOON;
+  $("theme-toggle").setAttribute("aria-label",dark?"Byt till ljust läge":"Byt till mörkt läge");
+  $("theme-toggle").title=dark?"Ljust läge":"Mörkt läge";
+  document.querySelector('meta[name="theme-color"]').setAttribute("content",dark?"#141917":"#F2F4F1");
+  document.querySelectorAll("[data-theme-choice]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.themeChoice===c)));
+}
+function setTheme(c){lsSet(K_THEME,c==="auto"?null:c);applyTheme()}
+$("theme-toggle").onclick=()=>setTheme(isDark()?"light":"dark");
+document.querySelectorAll("[data-theme-choice]").forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
+if(darkMQ.addEventListener)darkMQ.addEventListener("change",applyTheme);
+applyTheme();
+
 // ---------- Filformat i data.json ----------
-// { "notes": [ {id, title, text, color, pinned, created, updated} ], "links": [ {id, name, url, order} ] }
+// { "notes": [ {id, title, text, color, pinned, order, created, updated} ], "links": [ {id, name, url, order} ] }
 function toMap(file){
   const m={}; if(!file)return m;
   (file.notes||[]).forEach(n=>{const {id,...r}=n;m[id]={kind:"note",...r}});
@@ -232,7 +342,7 @@ function toMap(file){
 function fromMap(m){
   const notes=[],links=[];
   for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r})}
-  notes.sort((a,b)=>(b.updated||0)-(a.updated||0)); links.sort((a,b)=>(a.order||0)-(b.order||0));
+  notes.sort((a,b)=>(!!b.pinned-!!a.pinned)||(ord(a)-ord(b))); links.sort((a,b)=>(a.order||0)-(b.order||0));
   return {notes,links};
 }
 function applyOps(m,ops){for(const o of ops){if(o.op==="put")m[o.id]=o.data;else delete m[o.id]}return m}
@@ -258,31 +368,34 @@ async function ghPut(file,sha){
   if(sha)body.sha=sha;
   return fetch(API,{method:"PUT",headers:{...headers(),"Content-Type":"application/json"},body:JSON.stringify(body)});
 }
-function status(kind,text){const s=$("sync");s.className="sync "+kind;s.querySelector("span").textContent=text}
+function status(kind,text){
+  for(const el of [$("sync"),$("s-state")]){el.classList.remove("ok","busy","err");el.classList.add(kind);el.querySelector("span").textContent=text}
+  $("sync").title=text;
+}
 function errText(st){
-  if(st===401)return "Token fungerar inte – öppna Inställningar";
-  if(st===403||st===404)return "Token saknar åtkomst till repot home-data";
+  if(st===401)return "Token fungerar inte – byt token";
+  if(st===403||st===404)return "Token saknar åtkomst till home-data";
   return "Kunde inte nå GitHub – försöker igen";
 }
+function show(){if(drag||editing){needRender=true}else render()}
 async function sync(){
-  if(syncing){syncAgain=true;return}
   if(!token()){
     status("err",pending.length?"Ej sparat – lägg in token":"Lägg in token för att se dina anteckningar");
     return;
   }
+  if(syncing){syncAgain=true;return}
   syncing=true;
   try{
     for(let attempt=0;attempt<3;attempt++){
       status("busy",pending.length?"Sparar…":"Hämtar…");
       const {file,sha}=await ghGet();
       const n=pending.length;
-      if(!n){items=toMap(file);saveLocal();if(!editing)render();status(token()?"ok":"err",token()?"Sparat på GitHub":"Läsläge – lägg in token för att spara");return}
-      if(!token()){items=applyOps(toMap(file),pending);saveLocal();if(!editing)render();status("err","Ej sparat – lägg in token");return}
+      if(!n){items=toMap(file);saveLocal();show();status("ok","Sparat på GitHub");return}
       const merged=applyOps(toMap(file),pending.slice(0,n));
       const r=await ghPut(fromMap(merged),sha);
       if(r.ok){
         pending.splice(0,n);
-        items=applyOps(merged,pending);saveLocal();if(!editing)render();
+        items=applyOps(merged,pending);saveLocal();show();
         status("ok","Sparat på GitHub");
         if(!pending.length)return;
         continue;
@@ -299,18 +412,11 @@ async function sync(){
   }
 }
 function schedule(){clearTimeout(timer);status("busy","Osparat…");timer=setTimeout(sync,1200)}
+function commit(){saveLocal();render();schedule()}
+function put(id,data){items[id]=data;pending.push({op:"put",id,data});commit()}
+function del(id){delete items[id];pending.push({op:"del",id});commit()}
 
-function welcome(){
-  const now=Date.now();
-  return {
-    "n_welcome":{kind:"note",title:"Välkommen!",text:"Skriv en ny anteckning i rutan högst upp.\nKlicka på en anteckning för att ändra eller ta bort den.\nNålen fäster den överst.",color:"sage",pinned:true,created:now,updated:now},
-    "l_1":{kind:"link",name:"SVT Nyheter",url:"https://www.svt.se/",order:1}
-  };
-}
-function put(id,data){items[id]=data;pending.push({op:"put",id,data});saveLocal();render();schedule()}
-function del(id){delete items[id];pending.push({op:"del",id});saveLocal();render();schedule()}
-
-// ---------- Rendering ----------
+// ---------- Hjälpare ----------
 function el(tag,attrs,...kids){const e=document.createElement(tag);for(const k in attrs||{}){if(k==="class")e.className=attrs[k];else if(k.startsWith("on"))e.addEventListener(k.slice(2),attrs[k]);else e.setAttribute(k,attrs[k])}for(const c of kids)if(c!=null)e.append(c);return e}
 function rel(ts){
   const d=new Date(ts),n=new Date();
@@ -319,31 +425,169 @@ function rel(ts){
   if(d.toDateString()===y.toDateString())return "Igår";
   return d.toLocaleDateString("sv-SE",{day:"numeric",month:"short"});
 }
-const PIN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
-const PIN_O='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
+function host(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
+// Ordning: anteckningar med "order" sorteras på den, äldre utan "order" hamnar efter datum (nyast först)
+function ord(v){return v.order!=null?v.order:-(v.updated||v.created||0)}
+function group(pinned){return Object.entries(items).filter(([,v])=>v.kind==="note"&&!!v.pinned===pinned).sort((a,b)=>ord(a[1])-ord(b[1])).map(e=>e[0])}
+function topOrder(pinned){const g=group(pinned);return g.length?ord(items[g[0]])-1:0}
 
-function noteEl(id,n){
-  const pin=el("button",{class:"pin",type:"button","aria-pressed":String(!!n.pinned),"aria-label":n.pinned?"Lossa":"Fäst överst",title:n.pinned?"Lossa":"Fäst överst",
-    onclick:e=>{e.stopPropagation();put(id,{...n,pinned:!n.pinned})}});
-  pin.innerHTML=n.pinned?PIN:PIN_O;
-  const card=el("article",{class:"note",tabindex:"0",style:"background:var(--n-"+(n.color||"plain")+")",
-    onclick:()=>openNote(id),onkeydown:e=>{if(e.key==="Enter")openNote(id)}},
-    n.title?el("h3",{},n.title):null, n.text?el("p",{},n.text):null, el("time",{},rel(n.updated||n.created)), pin);
+// ---------- Anteckningar ----------
+const PIN='<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
+const PIN_O='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 3H8v2l1 1v5l-3 3v2h5v5l1 1 1-1v-5h5v-2l-3-3V6l1-1z"/></svg>';
+const noteEls=new Map();
+
+function buildNote(id){
+  const card=el("article",{class:"note",tabindex:"0","data-id":id});
+  card.addEventListener("click",e=>{if(Date.now()<suppressClick||e.target.closest(".pin"))return;openNote(id)});
+  card.addEventListener("keydown",e=>{
+    if(e.target!==card)return;
+    if(e.key==="Enter"){openNote(id);return}
+    if(e.altKey&&/^Arrow/.test(e.key)){e.preventDefault();moveBy(id,(e.key==="ArrowLeft"||e.key==="ArrowUp")?-1:1)}
+  });
+  card.addEventListener("contextmenu",e=>e.preventDefault());
+  card.addEventListener("pointerdown",e=>pressStart(e,card));
   return card;
 }
-function host(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
-function render(){
-  const all=Object.entries(items);
-  const notes=all.filter(([,v])=>v.kind==="note").sort((a,b)=>(b[1].updated||0)-(a[1].updated||0));
-  const pinned=notes.filter(([,v])=>v.pinned), rest=notes.filter(([,v])=>!v.pinned);
-  $("pinned").replaceChildren(...pinned.map(([k,v])=>noteEl(k,v)));
-  $("notes").replaceChildren(...rest.map(([k,v])=>noteEl(k,v)));
-  $("pinned-wrap").hidden=!pinned.length||!rest.length;
-  if(pinned.length&&!rest.length){$("notes").replaceChildren(...pinned.map(([k,v])=>noteEl(k,v)))}
-  $("empty").hidden=notes.length>0;
+function fillNote(card,n){
+  const sig=JSON.stringify([n.title,n.text,n.color,n.pinned,n.updated]);
+  if(card._sig===sig)return;
+  card._sig=sig;
+  card.style.background="var(--n-"+(n.color||"plain")+")";
+  card.setAttribute("aria-label",(n.title||n.text||"Anteckning").slice(0,60)+". Alt+pil flyttar.");
+  const pin=el("button",{class:"pin",type:"button","aria-pressed":String(!!n.pinned),"aria-label":n.pinned?"Lossa":"Fäst överst",title:n.pinned?"Lossa":"Fäst överst"});
+  pin.innerHTML=n.pinned?PIN:PIN_O;
+  const id=card.dataset.id;
+  pin.addEventListener("click",e=>{e.stopPropagation();const v=items[id];if(!v)return;put(id,{...v,pinned:!v.pinned,order:topOrder(!v.pinned)})});
+  card.replaceChildren(...[n.title?el("h3",{},n.title):null,n.text?el("p",{},n.text):null,el("time",{},rel(n.updated||n.created)),pin].filter(Boolean));
+}
+function colCount(){
+  const w=$("notes-sec").clientWidth;
+  const colW=w<640?150:230;
+  return Math.max(1,Math.min(5,Math.floor((w+12)/(colW+12))));
+}
+// Lägger anteckningarna i kolumner: 1:a vänster, 2:a nästa kolumn osv. Flyttar befintliga element (förstör inget).
+function layoutGroup(box,ids){
+  const cols=ids.length?colCount():0;
+  let colEls=[...box.children];
+  if(colEls.length!==cols){
+    while(box.children.length>cols)box.lastElementChild.remove();
+    while(box.children.length<cols)box.append(el("div",{class:"col"}));
+    colEls=[...box.children];
+  }
+  colEls.forEach((c,ci)=>{
+    const want=ids.filter((_,i)=>i%cols===ci).map(id=>noteEls.get(id));
+    const cur=[...c.children];
+    if(want.length!==cur.length||want.some((w,i)=>w!==cur[i])){
+      c.append(...want);
+      [...c.children].forEach(ch=>{if(!want.includes(ch))ch.remove()});
+    }
+  });
+}
+function renderNotes(){
+  const p=group(true),r=group(false);
+  const both=p.length>0&&r.length>0;
+  const alive=new Set([...p,...r]);
+  for(const [id,e] of noteEls)if(!alive.has(id)){e.remove();noteEls.delete(id)}
+  for(const id of alive){let e=noteEls.get(id);if(!e){e=buildNote(id);noteEls.set(id,e)}fillNote(e,items[id])}
+  $("pinned-wrap").hidden=!both;
+  if(both){layoutGroup($("pinned"),p);layoutGroup($("notes"),r)}
+  else{layoutGroup($("pinned"),[]);layoutGroup($("notes"),p.length?p:r)}
+  $("empty").hidden=alive.size>0;
+  $("drag-tip").hidden=alive.size<2;
+  $("drag-tip").textContent=matchMedia("(pointer:coarse)").matches?"Håll in för att flytta":"Dra för att flytta";
+}
+function boxOf(id){const c=noteEls.get(id);return c&&c.parentElement?c.parentElement.parentElement:null}
+function saveOrder(ids){
+  let changed=false;
+  ids.forEach((id,i)=>{const v=items[id];if(v&&v.order!==i+1){items[id]={...v,order:i+1};pending.push({op:"put",id,data:items[id]});changed=true}});
+  if(changed)commit();else render();
+}
+function moveBy(id,delta){
+  const v=items[id];if(!v)return;
+  const ids=group(!!v.pinned);const i=ids.indexOf(id),j=i+delta;
+  if(j<0||j>=ids.length)return;
+  ids.splice(i,1);ids.splice(j,0,id);
+  saveOrder(ids);
+  const c=noteEls.get(id);if(c)c.focus();
+}
 
-  const links=all.filter(([,v])=>v.kind==="link").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-  const tiles=links.map(([k,v],i)=>{
+// ---------- Dra och släpp (mus: dra direkt, touch: håll in) ----------
+function pressStart(e,card){
+  if(e.button!==0||e.target.closest(".pin"))return;
+  if(drag)return;
+  const id=card.dataset.id;
+  drag={id,card,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType!=="mouse",active:false};
+  if(drag.touch){
+    card.classList.add("press");
+    drag.timer=setTimeout(()=>{if(drag&&!drag.active)startDrag()},380);
+  }
+}
+function startDrag(){
+  const v=items[drag.id];if(!v){cancelPress();return}
+  const card=drag.card;card.classList.remove("press");
+  drag.active=true;
+  drag.list=group(!!v.pinned);
+  drag.box=boxOf(drag.id);
+  const r=card.getBoundingClientRect();
+  drag.ox=drag.x-r.left;drag.oy=drag.y-r.top;
+  const g=card.cloneNode(true);g.classList.add("ghost");g.classList.remove("press");
+  g.style.width=r.width+"px";
+  document.body.append(g);drag.ghost=g;
+  card.classList.add("placeholder");
+  document.body.classList.add("dragging");
+  try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}
+  moveGhost();
+}
+function moveGhost(){drag.ghost.style.transform="translate("+(drag.x-drag.ox)+"px,"+(drag.y-drag.oy)+"px) rotate(1.5deg)"}
+function dragMove(){
+  moveGhost();
+  const under=document.elementFromPoint(drag.x,drag.y);
+  const t=under&&under.closest(".note");
+  if(t&&t!==drag.card&&drag.list.includes(t.dataset.id)&&drag.box){
+    const r=t.getBoundingClientRect();
+    const after=drag.y>r.top+r.height/2;
+    const ids=drag.list.filter(i=>i!==drag.id);
+    const k=ids.indexOf(t.dataset.id)+(after?1:0);
+    ids.splice(k,0,drag.id);
+    if(ids.join()!==drag.list.join()){drag.list=ids;layoutGroup(drag.box,ids)}
+  }
+  // Rulla sidan när man drar nära kanten
+  const edge=70;
+  if(drag.y<edge)window.scrollBy(0,-Math.ceil((edge-drag.y)/5));
+  else if(drag.y>innerHeight-edge)window.scrollBy(0,Math.ceil((drag.y-(innerHeight-edge))/5));
+}
+function cancelPress(){if(!drag)return;clearTimeout(drag.timer);drag.card.classList.remove("press");drag=null;if(needRender){needRender=false;render()}}
+function endDrag(){
+  if(!drag)return;
+  if(!drag.active){cancelPress();return}
+  const d=drag;drag=null;
+  d.ghost.remove();d.card.classList.remove("placeholder");document.body.classList.remove("dragging");
+  suppressClick=Date.now()+350;
+  needRender=false;
+  saveOrder(d.list);
+}
+document.addEventListener("pointermove",e=>{
+  if(!drag||e.pointerId!==drag.pid)return;
+  drag.x=e.clientX;drag.y=e.clientY;
+  if(!drag.active){
+    const dist=Math.hypot(drag.x-drag.sx,drag.y-drag.sy);
+    if(drag.touch){if(dist>10)cancelPress()}      // fingret rör sig = man vill rulla, inte flytta
+    else if(dist>6)startDrag();
+    return;
+  }
+  dragMove();
+});
+document.addEventListener("pointerup",e=>{if(drag&&e.pointerId===drag.pid)endDrag()});
+document.addEventListener("pointercancel",e=>{if(drag&&e.pointerId===drag.pid){drag.active?endDrag():cancelPress()}});
+document.addEventListener("touchmove",e=>{if(drag&&drag.active)e.preventDefault()},{passive:false});
+window.addEventListener("blur",()=>{if(drag)drag.active?endDrag():cancelPress()});
+let lastCols=0;
+new ResizeObserver(()=>{const c=colCount();if(c!==lastCols){lastCols=c;if(!drag)renderNotes()}}).observe($("notes-sec"));
+
+// ---------- Länkar ----------
+function renderLinks(){
+  const links=Object.entries(items).filter(([,v])=>v.kind==="link").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  const tiles=links.map(([k,v])=>{
     const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url)},
       el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),
       el("span",{},v.name),
@@ -354,6 +598,7 @@ function render(){
   tiles.push(el("button",{class:"link add-tile",type:"button",onclick:openLinkForm},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
   $("links").replaceChildren(...tiles);
 }
+function render(){renderNotes();renderLinks()}
 
 // ---------- Färgväljare ----------
 function swatches(box,get,set){
@@ -367,11 +612,11 @@ function swatches(box,get,set){
 // ---------- Snabbanteckning ----------
 let qColor="plain";
 const quick=$("quick");
-function qOpen(){quick.classList.add("open");swatches($("q-sw"),()=>qColor,c=>{qColor=c;quick.style.background="var(--n-"+c+")"})}
+function qOpen(){if(quick.classList.contains("open"))return;quick.classList.add("open");swatches($("q-sw"),()=>qColor,c=>{qColor=c;quick.style.background="var(--n-"+c+")"})}
 function qReset(){$("q-title").value="";$("q-text").value="";qColor="plain";quick.style.background="";quick.classList.remove("open");$("q-text").style.height=""}
 function qSave(){
   const title=$("q-title").value.trim(), text=$("q-text").value.trim();
-  if(title||text){const now=Date.now();put(uid("n_"),{kind:"note",title,text,color:qColor,pinned:false,created:now,updated:now})}
+  if(title||text){const now=Date.now();put(uid("n_"),{kind:"note",title,text,color:qColor,pinned:false,order:topOrder(false),created:now,updated:now})}
   qReset();
 }
 $("q-text").addEventListener("focus",qOpen);
@@ -380,7 +625,7 @@ $("q-text").addEventListener("input",e=>{e.target.style.height="auto";e.target.s
 quick.addEventListener("submit",e=>{e.preventDefault();qSave()});
 quick.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();qSave()}if(e.key==="Escape")qReset()});
 $("q-cancel").onclick=qReset;
-document.addEventListener("mousedown",e=>{if(quick.classList.contains("open")&&!quick.contains(e.target))qSave()});
+document.addEventListener("pointerdown",e=>{if(quick.classList.contains("open")&&!quick.contains(e.target)&&$("set-scrim").hidden)qSave()});
 
 // ---------- Redigera anteckning ----------
 let dColor="plain";
@@ -390,24 +635,25 @@ function openNote(id){
   $("d-title").value=n.title||""; $("d-text").value=n.text||"";
   $("dlg").style.background="var(--n-"+dColor+")";
   swatches($("d-sw"),()=>dColor,c=>{dColor=c;$("dlg").style.background="var(--n-"+c+")"});
-  $("scrim").hidden=false; $("d-text").focus();
+  $("note-scrim").hidden=false;
+  if(!matchMedia("(pointer:coarse)").matches)$("d-text").focus();
 }
 function closeNote(){
   if(!editing)return;
-  const n=items[editing], title=$("d-title").value.trim(), text=$("d-text").value.trim();
-  const id=editing; editing=null; $("scrim").hidden=true;
-  if(!n)return;
+  const id=editing,n=items[id], title=$("d-title").value.trim(), text=$("d-text").value.trim();
+  editing=null; $("note-scrim").hidden=true;
+  if(!n){if(needRender){needRender=false;render()}return}
   if(!title&&!text){removeNote(id,n);return}
-  if(title!==(n.title||"")||text!==(n.text||"")||dColor!==(n.color||"plain"))
-    put(id,{...n,title,text,color:dColor,updated:Date.now()});
+  if(title!==(n.title||"")||text!==(n.text||"")||dColor!==(n.color||"plain"))put(id,{...n,title,text,color:dColor,updated:Date.now()});
+  else if(needRender){needRender=false;render()}
 }
 function removeNote(id,n){del(id);toast("Anteckningen togs bort",()=>put(id,n))}
 $("dlg").addEventListener("submit",e=>{e.preventDefault();closeNote()});
-$("scrim").addEventListener("mousedown",e=>{if(e.target===$("scrim"))closeNote()});
-$("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;$("scrim").hidden=true;if(n)removeNote(id,n)};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&editing)closeNote()});
+$("note-scrim").addEventListener("mousedown",e=>{if(e.target===$("note-scrim"))closeNote()});
+$("d-del").onclick=()=>{const id=editing,n=items[id];editing=null;$("note-scrim").hidden=true;if(n)removeNote(id,n)};
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(editing)closeNote();else if(!$("set-scrim").hidden)closeSettings()});
 
-// ---------- Länkar ----------
+// ---------- Länkar: lägg till / ta bort ----------
 function openLinkForm(){$("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent="Du behöver inte skriva https:// – det läggs till automatiskt.";$("l-name").focus()}
 $("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset()};
 $("linkform").addEventListener("submit",e=>{
@@ -433,21 +679,42 @@ function toast(msg,undo){
 }
 
 // ---------- Inställningar ----------
-function openSettings(){$("s-token").value=token();$("set-scrim").hidden=false;$("s-token").focus()}
+function openSettings(){$("s-token").value=token();updateInstall();$("set-scrim").hidden=false}
 function closeSettings(){$("set-scrim").hidden=true}
 $("open-settings").onclick=openSettings;
 $("sync").onclick=openSettings;
-$("s-cancel").onclick=closeSettings;
+$("s-close").onclick=closeSettings;
 $("set-scrim").addEventListener("mousedown",e=>{if(e.target===$("set-scrim"))closeSettings()});
-$("setform").addEventListener("submit",e=>{e.preventDefault();lsSet(K_TOKEN,$("s-token").value.trim()||null);closeSettings();sync()});
-$("s-remove").onclick=()=>{lsSet(K_TOKEN,null);$("s-token").value="";closeSettings();sync()};
+$("setform").addEventListener("submit",e=>{e.preventDefault();lsSet(K_TOKEN,$("s-token").value.trim()||null);toast("Token sparad på den här enheten");sync()});
+$("s-remove").onclick=()=>{lsSet(K_TOKEN,null);$("s-token").value="";toast("Token borttagen från den här enheten");sync()};
+$("s-sync").onclick=()=>sync();
+
+// ---------- Installera som app ----------
+let installEvt=null;
+const standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function updateInstall(){
+  const t=$("inst-text");
+  $("inst-row").hidden=!installEvt||standalone();
+  if(standalone())t.textContent="Vardagssidan körs redan som app.";
+  else if(installEvt)t.textContent="Lägg Vardagssidan som en egen app på hemskärmen eller datorn. Den öppnas då i eget fönster utan webbläsarens adressfält.";
+  else if(isIOS)t.textContent="På iPhone och iPad: öppna sidan i Safari, tryck på Dela-knappen (fyrkanten med en pil uppåt), välj ”Lägg till på hemskärmen” och tryck ”Lägg till”.";
+  else t.textContent="I Chrome eller Edge: öppna webbläsarens meny (tre prickar uppe till höger) och välj ”Installera app” eller ”Lägg till på startskärmen”.";
+}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;updateInstall()});
+window.addEventListener("appinstalled",()=>{installEvt=null;updateInstall();toast("Vardagssidan är installerad")});
+$("inst-btn").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(_){}installEvt=null;updateInstall()};
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 // ---------- Start ----------
 try{items=JSON.parse(lsGet(K_CACHE)||"null")||{}}catch(e){items={}}
 try{pending=JSON.parse(lsGet(K_PENDING)||"[]")||[]}catch(e){pending=[]}
+lastCols=colCount();
 render();
 sync();
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!editing)sync()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&!editing&&!drag)sync()});
 window.addEventListener("beforeunload",e=>{if(pending.length){e.preventDefault();e.returnValue=""}});
 })();
 </script>
+</body>
+</html>
