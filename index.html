@@ -130,9 +130,10 @@ header .info,header .quick{margin:0;flex:0 0 100%;width:100%;max-width:var(--col
 .links-sec{max-width:var(--colw)}
 .links-row{display:flex;align-items:flex-start;gap:8px}
 .links{flex:1;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,88px);gap:8px;margin-left:-21px}
-#edit-links{color:var(--muted);margin-top:4px;flex-shrink:0}
-#edit-links:hover{color:var(--ink)}
-#edit-links[aria-pressed="true"]{background:var(--sel);color:var(--accent)}
+#edit-links{margin-top:4px;flex-shrink:0}
+#edit-links,#sec-edit{color:var(--muted)}
+#edit-links:hover,#sec-edit:hover{color:var(--ink)}
+#edit-links[aria-pressed="true"],#sec-edit[aria-pressed="true"]{background:var(--sel);color:var(--accent)}
 .link{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 4px 10px;border-radius:var(--r);text-decoration:none;color:var(--ink);min-width:0;border:1px solid transparent;background:transparent;cursor:pointer}
 .link:hover{background:var(--surface);box-shadow:var(--shadow)}
 .mono{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:20px;color:#fff}
@@ -429,7 +430,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 
   <main id="view-section" class="view" hidden>
     <a class="back" href="#" id="sec-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
-    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><button class="btn outline" id="sec-edit" type="button">Redigera</button></div>
+    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><button class="icon-btn" id="sec-edit" type="button" aria-label="Redigera sidan" title="Redigera sidan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button></div>
     <div id="sec-editbar" class="medit" hidden></div>
     <div class="cards" id="sec-cards"></div>
     <div id="sec-form"></div>
@@ -1153,7 +1154,7 @@ function renderPage(force){
   pageDirty=false;
   const sid=route,list=sec.items||[];
   $("sec-title").textContent=sec.title||"Namnlös";
-  $("sec-edit").textContent=secEdit?"Klar":"Redigera";
+  {const b=$("sec-edit");b.innerHTML=secEdit?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';b.setAttribute("aria-pressed",String(secEdit));b.setAttribute("aria-label",secEdit?"Klar med sidan":"Redigera sidan");b.title=secEdit?"Klar":"Redigera sidan"}
   const bar=$("sec-editbar");
   if(secEdit){
     const idx=sectionList().findIndex(([k])=>k===sid),n=sectionList().length;
