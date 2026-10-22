@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Vardagssidan</title>
+<title>[tomasandersson]</title>
 <meta name="description" content="Anteckningar och länkar för vardagen.">
 <meta name="theme-color" content="#F2F4F1">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Vardag">
+<meta name="apple-mobile-web-app-title" content="[tomasandersson]">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>
 // Sätt valt tema direkt, innan sidan ritas, så att den inte blinkar
@@ -359,7 +359,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
     <button class="icon-btn" id="open-menu" type="button" aria-label="Öppna menyn" aria-controls="side" aria-expanded="false" title="Meny">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
     </button>
-    <h1 class="sr">Vardagssidan</h1>
+    <h1 class="sr">[tomasandersson]</h1>
     <div class="info" id="info" aria-label="Idag">
       <span class="i-item"><b id="i-day">Idag</b><span class="mut" id="i-week"></span></span>
       <span class="i-item i-time" id="i-time">--:--</span>
@@ -477,7 +477,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
     <section class="set-sec" aria-labelledby="s-app-h">
       <h3 class="label" id="s-app-h">Installera som app</h3>
       <p id="inst-text"></p>
-      <div class="row" id="inst-row" hidden><button type="button" class="btn primary" id="inst-btn">Installera Vardagssidan</button></div>
+      <div class="row" id="inst-row" hidden><button type="button" class="btn primary" id="inst-btn">Installera [tomasandersson]</button></div>
     </section>
   </div>
 </div>
@@ -883,7 +883,7 @@ function renderSide(){
   const toggle=isMobile()
     ?html("button",{class:"s-toggle",type:"button","aria-label":"Stäng menyn",onclick:closeMenu},I_X)
     :html("button",{class:"s-toggle",type:"button","aria-label":collapsed?"Fäll ut menyn":"Fäll ihop menyn","data-tip":collapsed?"Fäll ut menyn":"","aria-expanded":String(!collapsed),onclick:()=>setCollapsed(!collapsed)},collapsed?I_SIDE_OUT:I_SIDE_IN);
-  kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},'<i></i>'),el("span",{class:"s-title"},"Vardagssidan"),toggle));
+  kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},'<i></i>'),el("span",{class:"s-title"},"[tomasandersson]"),toggle));
   kids.push(sideItem("","Start",ICO_HOME));
   sectionList().forEach(([sid,sec])=>kids.push(sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
   if(menuNewSec&&!collapsed){
@@ -1075,7 +1075,7 @@ function renderPage(force){
   const sec=route?getSection(route):null;
   const onSec=!!sec;
   $("view-home").hidden=onSec;$("view-section").hidden=!onSec;
-  document.title=onSec?(sec.title||"Sida")+" – Vardagssidan":"Vardagssidan";
+  document.title=onSec?(sec.title||"Sida")+" – [tomasandersson]":"[tomasandersson]";
   if(!onSec)return;
   const view=$("view-section"),a=document.activeElement;
   if(!force&&view.contains(a)&&a.tagName==="INPUT"){pageDirty=true;return}
@@ -1219,13 +1219,13 @@ const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==
 function updateInstall(){
   const t=$("inst-text");
   $("inst-row").hidden=!installEvt||standalone();
-  if(standalone())t.textContent="Vardagssidan körs redan som app.";
-  else if(installEvt)t.textContent="Lägg Vardagssidan som en egen app på hemskärmen eller datorn. Den öppnas då i eget fönster utan webbläsarens adressfält.";
+  if(standalone())t.textContent="[tomasandersson] körs redan som app.";
+  else if(installEvt)t.textContent="Lägg [tomasandersson] som en egen app på hemskärmen eller datorn. Den öppnas då i eget fönster utan webbläsarens adressfält.";
   else if(isIOS)t.textContent="På iPhone och iPad: öppna sidan i Safari, tryck på Dela-knappen (fyrkanten med en pil uppåt), välj ”Lägg till på hemskärmen” och tryck ”Lägg till”.";
   else t.textContent="I Chrome eller Edge: öppna webbläsarens meny (tre prickar uppe till höger) och välj ”Installera app” eller ”Lägg till på startskärmen”.";
 }
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;updateInstall()});
-window.addEventListener("appinstalled",()=>{installEvt=null;updateInstall();toast("Vardagssidan är installerad")});
+window.addEventListener("appinstalled",()=>{installEvt=null;updateInstall();toast("[tomasandersson] är installerad")});
 $("inst-btn").onclick=async()=>{if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(_){}installEvt=null;updateInstall()};
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 
