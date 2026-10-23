@@ -7,7 +7,8 @@
 <meta name="description" content="Anteckningar och länkar för vardagen.">
 <meta name="theme-color" content="#F2F4F1">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -249,8 +250,8 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .side.collapsed{width:72px;align-items:center}
 .s-head{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 0 0 8px;margin-bottom:14px;width:100%;box-sizing:border-box}
 .collapsed .s-head{padding:0;justify-content:center}
-.s-logo{width:28px;height:28px;border-radius:8px;background:#126B5F;display:grid;place-items:center;flex-shrink:0}
-.s-logo i{width:12px;height:14px;background:#F2F4F1;border-radius:2px}
+.s-logo{width:30px;height:30px;flex-shrink:0;display:block}
+.s-logo svg{width:100%;height:100%;display:block}
 .s-title{flex:1;min-width:0;font-family:var(--f-body);font-weight:600;font-size:14px;letter-spacing:.09em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s-toggle{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
 .collapsed .s-toggle{width:44px;height:44px;border-radius:10px}
@@ -1319,6 +1320,7 @@ let sideCollapsed=lsGet(K_SIDE)==="collapsed", panelItem=null;
 const DOTS=["#2C8F80","#3F7FC0","#C9772E","#8DA33A","#C2566A","#7A8A86","#D08A3A","#3A9BB0"];
 function dotColor(name){return DOTS[(name.charCodeAt(0)+name.length)%DOTS.length]}
 const SVG=(d,extra)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'+(extra||"")+'>'+d+'</svg>';
+const LOGO_SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#126B5F"/><path d="M33 30 H27 V70 H33" fill="none" stroke="#F2F4F1" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="M67 30 H73 V70 H67" fill="none" stroke="#F2F4F1" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="M42 34 V60 Q42 67 49 67 H53" fill="none" stroke="#F2F4F1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M35 43 H52" stroke="#F2F4F1" stroke-width="7" stroke-linecap="round"/><circle cx="60" cy="62" r="5" fill="#E9B949"/></svg>';
 const I_SIDE_IN=SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15M15.5 10l-2 2 2 2"/>');
 const I_SIDE_OUT=SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15M13.5 10l2 2-2 2"/>');
 const I_X=SVG('<path d="M6 6l12 12M18 6L6 18"/>');
@@ -1353,7 +1355,7 @@ function renderSide(){
   const toggle=isMobile()
     ?html("button",{class:"s-toggle",type:"button","aria-label":"Stäng menyn",onclick:closeMenu},I_X)
     :html("button",{class:"s-toggle",type:"button","aria-label":collapsed?"Fäll ut menyn":"Fäll ihop menyn","data-tip":collapsed?"Fäll ut menyn":"","aria-expanded":String(!collapsed),onclick:()=>setCollapsed(!collapsed)},collapsed?I_SIDE_OUT:I_SIDE_IN);
-  kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},'<i></i>'),el("span",{class:"s-title"},"[tomasandersson]"),toggle));
+  kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},LOGO_SVG),el("span",{class:"s-title"},"[tomasandersson]"),toggle));
   kids.push(sideItem("","Start",ICO_HOME));
   sectionList().forEach(([sid,sec])=>kids.push(sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
   if(menuNewSec&&!collapsed){
