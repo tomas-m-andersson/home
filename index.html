@@ -440,10 +440,23 @@ button.dtg:hover{background:var(--bg)}
 .todo.coll .todo-fold svg{transform:rotate(-90deg)}
 .todo .s-mini{width:30px;height:30px;border:0;color:var(--muted)}
 .tbar{height:4px;background:color-mix(in srgb,var(--ink) 8%,transparent);border-radius:999px;margin:2px 0 4px}
-.tbar i{display:block;height:4px;background:var(--accent);border-radius:999px}
+.tbar{display:flex;overflow:hidden}
+.tbar i{display:block;height:4px;background:var(--accent)}
+.tbar i.st{background:var(--warn)}
 .todo-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.todo-list li{display:flex;align-items:center;gap:10px;min-height:38px}
-.todo-list input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;margin:0}
+.todo-list li{display:flex;align-items:center;gap:8px;min-height:38px;border-radius:8px;background:var(--surface);position:relative}
+.todo-list li.dragging-row{box-shadow:var(--lift);z-index:2;background:var(--surface)}
+.ti-grip{width:22px;height:30px;border:0;background:transparent;color:var(--muted);opacity:.45;display:grid;place-items:center;cursor:grab;touch-action:none;padding:0;margin-left:-6px;flex-shrink:0;border-radius:6px}
+.ti-grip:hover,.ti-grip:focus-visible{opacity:1}
+.ti-grip svg{width:16px;height:16px}
+.dragging .ti-grip{cursor:grabbing}
+.ti-st{width:22px;height:22px;border-radius:6px;border:2px solid color-mix(in srgb,var(--ink) 35%,transparent);background:transparent;display:grid;place-items:center;cursor:pointer;flex-shrink:0;padding:0;color:var(--accent-ink);position:relative;overflow:hidden}
+.ti-st:hover{border-color:var(--accent)}
+.ti-st.is-started{border-color:var(--warn)}
+.ti-st.is-started i{position:absolute;left:0;top:0;bottom:0;width:50%;background:var(--warn)}
+.ti-st.is-done{background:var(--accent);border-color:var(--accent)}
+.ti-st svg{width:15px;height:15px}
+.todo-list li.started .ti-txt::after{content:"Påbörjad";margin-left:8px;font-size:11.5px;font-weight:600;color:color-mix(in srgb,var(--warn) 75%,var(--ink));background:color-mix(in srgb,var(--warn) 18%,transparent);padding:2px 7px;border-radius:999px;white-space:nowrap;vertical-align:1px}
 .ti-txt{flex:1;min-width:0;text-align:left;border:0;background:transparent;font:inherit;color:var(--ink);padding:6px 0;cursor:text;overflow-wrap:anywhere}
 .ti-txt.done{color:var(--muted);text-decoration:line-through}
 .ti-in{flex:1;min-width:0;font:inherit;border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--bg)}
@@ -472,7 +485,8 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
   .pj-btns{width:100%}
   .pj-btns .ibtn.big{flex:1;width:auto;height:44px}
   .todo-list li{min-height:46px}
-  .todo-list input[type=checkbox]{width:20px;height:20px}
+  .ti-st{width:26px;height:26px}
+  .ti-grip{width:30px;height:40px;opacity:.6}
   .ti-x{width:40px;height:40px;opacity:.7}
 }
 
@@ -1397,7 +1411,7 @@ function renderSide(){
 (function(){
   let mode=null,sx=0,sy=0,st=0,dx=0,w=0;
   const side=$("side"),scrim=$("menu-scrim");
-  const blocked=()=>deskMQ.matches||!!(cdrag&&cdrag.active)||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
+  const blocked=()=>deskMQ.matches||!!tdrag||!!(cdrag&&cdrag.active)||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
   function reset(){side.style.transition="";side.style.transform="";side.style.visibility="";scrim.style.opacity="";scrim.style.transition=""}
   document.addEventListener("touchstart",e=>{
     mode=null;
@@ -1637,7 +1651,7 @@ function renderProject(force){
   }},"+ Ny lista")));
   if(!todos.length)tsec.append(el("p",{class:"hint"},"Inga listor än. Tryck på ”+ Ny lista” för att börja."));
   todos.forEach(L=>{
-    const done=L.items.filter(x=>x.done).length,tot=L.items.length,coll=pjCollapsed.has(L.id),ren=!!pjEdit["t"+L.id];
+    const done=L.items.filter(x=>x.done).length,started=L.items.filter(x=>!x.done&&x.started).length,tot=L.items.length,coll=pjCollapsed.has(L.id),ren=!!pjEdit["t"+L.id];
     const upd=fn=>saveItem(sid,it.id,x=>({...x,todos:(x.todos||[]).map(y=>y.id===L.id?fn({...y,items:[...y.items]}):y)}));
     const card=el("div",{class:"todo"+(coll?" coll":"")});
     let title;
@@ -1649,19 +1663,33 @@ function renderProject(force){
     }else title=el("h3",{},L.title);
     card.append(el("div",{class:"todo-h"},
       html("button",{class:"todo-fold",type:"button","aria-expanded":String(!coll),"aria-label":(coll?"Visa ":"Dölj ")+L.title,onclick:()=>{coll?pjCollapsed.delete(L.id):pjCollapsed.add(L.id);renderProject(true)}},I_DOWN),
-      title,el("span",{class:"todo-n"},done+" av "+tot+" klara"),
+      title,el("span",{class:"todo-n"},done+" av "+tot+" klara"+(started?" · "+started+" påbörjad"+(started>1?"e":""):"")),
       toolBtn("Byt namn på listan",I_PEN,()=>{pjEdit["t"+L.id]=true;renderProject(true);setTimeout(()=>{const t=$("tt-"+L.id);if(t){t.focus();t.select()}},30)}),
       toolBtn("Ta bort listan",I_TRASH,()=>{
         const before=(getSection(sid).items.find(x=>x.id===it.id).todos||[]);
         saveItem(sid,it.id,x=>({...x,todos:(x.todos||[]).filter(y=>y.id!==L.id)}));renderProject(true);
         toast("Listan ”"+L.title+"” togs bort",()=>{saveItem(sid,it.id,x=>({...x,todos:before}));renderProject(true)});
       })));
-    if(tot)card.append(el("div",{class:"tbar"},el("i",{style:"width:"+Math.round(done/tot*100)+"%"})));
+    if(tot)card.append(el("div",{class:"tbar"},el("i",{style:"width:"+(done/tot*100)+"%"}),el("i",{class:"st",style:"width:"+(started/tot*100)+"%"})));
     if(!coll){
       const ul=el("ul",{class:"todo-list"});
-      L.items.forEach(T=>{
-        const cb=el("input",{type:"checkbox","aria-label":T.text});cb.checked=!!T.done;
-        cb.addEventListener("change",()=>{upd(y=>({...y,items:y.items.map(z=>z.id===T.id?{...z,done:cb.checked}:z)}));renderProject(true)});
+      const reorder=ids=>{upd(y=>{const by=new Map(y.items.map(z=>[z.id,z]));return {...y,items:ids.map(i=>by.get(i)).filter(Boolean)}});renderProject(true)};
+      L.items.forEach((T,ti)=>{
+        // Status: ej påbörjad → påbörjad → klar → ej påbörjad
+        const stName=T.done?"Klar":T.started?"Påbörjad":"Ej påbörjad";
+        const nextName=T.done?"ej påbörjad":T.started?"klar":"påbörjad";
+        const cb=html("button",{class:"ti-st "+(T.done?"is-done":T.started?"is-started":""),type:"button","aria-label":T.text+": "+stName+". Tryck för att markera som "+nextName,title:stName+" – tryck för "+nextName,
+          onclick:()=>{upd(y=>({...y,items:y.items.map(z=>{if(z.id!==T.id)return z;const n={...z};if(z.done){n.done=false;delete n.started}else if(z.started){n.done=true;delete n.started}else n.started=true;return n})}));renderProject(true);setTimeout(()=>{const b=document.querySelector('[data-tid="'+T.id+'"] .ti-st');if(b)b.focus()},0)}},
+          T.done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':T.started?'<i></i>':'');
+        const grip=html("button",{class:"ti-grip",type:"button","aria-label":"Flytta ”"+T.text+"” – dra, eller använd pil upp/ned",title:"Dra för att flytta"},
+          '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>');
+        grip.addEventListener("keydown",e=>{
+          if(e.key!=="ArrowUp"&&e.key!=="ArrowDown")return;e.preventDefault();
+          const ids=L.items.map(z=>z.id),j=ti+(e.key==="ArrowUp"?-1:1);if(j<0||j>=ids.length)return;
+          ids.splice(ti,1);ids.splice(j,0,T.id);reorder(ids);
+          setTimeout(()=>{const g=document.querySelector('[data-tid="'+T.id+'"] .ti-grip');if(g)g.focus()},0);
+        });
+        grip.addEventListener("pointerdown",e=>todoDragStart(e,ul,reorder));
         let txt;
         if(pjEdit["i"+T.id]){
           txt=el("input",{class:"ti-in",id:"ti-"+T.id,value:T.text,"aria-label":"Ändra punkt"});
@@ -1671,7 +1699,7 @@ function renderProject(force){
         }else{
           txt=el("button",{class:"ti-txt"+(T.done?" done":""),type:"button",title:"Tryck för att ändra",onclick:()=>{pjEdit["i"+T.id]=true;renderProject(true);setTimeout(()=>{const t=$("ti-"+T.id);if(t)t.focus()},30)}},T.text);
         }
-        ul.append(el("li",{},cb,txt,el("button",{class:"ti-x",type:"button","aria-label":"Ta bort ”"+T.text+"”",title:"Ta bort",onclick:()=>{upd(y=>({...y,items:y.items.filter(z=>z.id!==T.id)}));renderProject(true)}},"×")));
+        ul.append(el("li",{"data-tid":T.id,class:T.started&&!T.done?"started":""},grip,cb,txt,el("button",{class:"ti-x",type:"button","aria-label":"Ta bort ”"+T.text+"”",title:"Ta bort",onclick:()=>{upd(y=>({...y,items:y.items.filter(z=>z.id!==T.id)}));renderProject(true)}},"×")));
       });
       card.append(ul);
       const add=el("input",{class:"ti-add",id:"ta-"+L.id,placeholder:"+ Lägg till punkt","aria-label":"Ny punkt i "+L.title,enterkeyhint:"done"});
@@ -1994,6 +2022,41 @@ document.addEventListener("pointerup",e=>{if(cdrag&&e.pointerId===cdrag.pid)endC
 document.addEventListener("pointercancel",e=>{if(cdrag&&e.pointerId===cdrag.pid){cdrag.active?endCardDrag():cancelCardPress()}});
 document.addEventListener("touchmove",e=>{if(cdrag&&cdrag.active)e.preventDefault()},{passive:false});
 window.addEventListener("blur",()=>{if(cdrag)cdrag.active?endCardDrag():cancelCardPress()});
+
+
+// ---------- Flytta rader i att-göra-listor (dra i greppet) ----------
+let tdrag=null;
+function todoDragStart(e,ul,reorder){
+  if(e.button!==0||tdrag)return;
+  e.preventDefault();
+  const li=e.target.closest("li");const r=li.getBoundingClientRect();
+  tdrag={ul,li,reorder,pid:e.pointerId,y0:e.clientY,top:r.top,before:[...ul.children].map(x=>x.dataset.tid).join()};
+  try{e.target.closest(".ti-grip").setPointerCapture(e.pointerId)}catch(_){}
+  li.classList.add("dragging-row");document.body.classList.add("dragging");
+}
+document.addEventListener("pointermove",e=>{
+  const d=tdrag;if(!d||e.pointerId!==d.pid)return;
+  e.preventDefault();
+  const rows=[...d.ul.children];
+  for(const row of rows){
+    if(row===d.li)continue;
+    const r=row.getBoundingClientRect(),mid=r.top+r.height/2;
+    const idx=rows.indexOf(row),me=rows.indexOf(d.li);
+    if(idx<me&&e.clientY<mid){row.before(d.li);break}
+    if(idx>me&&e.clientY>mid){row.after(d.li);break}
+  }
+  const r=d.li.getBoundingClientRect();
+  d.li.style.transform="translateY("+Math.max(-r.height,Math.min(r.height,e.clientY-(r.top+r.height/2)))*0.35+"px)";
+});
+function todoDragEnd(e){
+  const d=tdrag;if(!d||(e&&e.pointerId!==d.pid))return;
+  tdrag=null;d.li.classList.remove("dragging-row");d.li.style.transform="";document.body.classList.remove("dragging");
+  const ids=[...d.ul.children].map(x=>x.dataset.tid);
+  if(ids.join()!==d.before)d.reorder(ids);
+}
+document.addEventListener("pointerup",todoDragEnd);
+document.addEventListener("pointercancel",todoDragEnd);
+document.addEventListener("touchmove",e=>{if(tdrag)e.preventDefault()},{passive:false});
 
 // --- Sektionssidan ---
 function siteFor(r){
