@@ -7,8 +7,10 @@
 <meta name="description" content="Anteckningar och länkar för vardagen.">
 <meta name="theme-color" content="#F2F4F1">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -380,6 +382,11 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 
 #notes-sec{max-width:var(--colw)}
 
+.card.pcard{min-height:150px}
+.card.pcard .acts{margin-top:auto}
+.card.pcard .acts .tags{justify-content:flex-start;padding-top:0}
+#view-links .links-sec{max-width:var(--colw)}
+
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
 .dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
@@ -686,8 +693,29 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
 
   <main id="view-home" class="view">
 
+
+  <section aria-labelledby="h-notes" id="notes-sec">
+    <div class="sec-head"><h2 class="label" id="h-notes">Anteckningar</h2></div>
+    <div id="pinned-wrap" hidden><h3 class="label subhead">Fästa</h3><div class="notes" id="pinned"></div><div class="group-gap"></div><h3 class="label subhead">Övriga</h3></div>
+    <div class="notes" id="notes"></div>
+    <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
+  </section>
+  </main>
+
+  <main id="view-section" class="view" hidden>
+    <a class="back" href="#" id="sec-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
+    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><button class="icon-btn" id="sec-edit" type="button" aria-label="Redigera sidan" title="Redigera sidan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button></div>
+    <div id="sec-editbar" class="medit" hidden></div>
+    <div class="cards" id="sec-cards"></div>
+    <div id="sec-form"></div>
+    <div id="sec-dash" class="dash"></div>
+  </main>
+
+  <main id="view-links" class="view" hidden>
+    <a class="back" href="#" id="links-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
+    <div class="page-head"><h2 class="page-title" id="h-links">Länkar</h2></div>
   <section aria-labelledby="h-links" class="links-sec">
-    <h2 class="sr" id="h-links">Mina länkar</h2>
+    
     <div class="links-row">
       <div class="links" id="links"></div>
       <button class="icon-btn" id="edit-links" type="button" aria-label="Redigera länkar" title="Redigera länkar" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>
@@ -700,22 +728,6 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
       <p class="hint" id="l-hint">Du behöver inte skriva https:// – det läggs till automatiskt.</p>
     </form>
   </section>
-
-  <section aria-labelledby="h-notes" id="notes-sec">
-    <div class="sec-head"><h2 class="label" id="h-notes">Anteckningar</h2></div>
-    <div id="pinned-wrap" hidden><h3 class="label subhead">Fästa</h3><div class="notes" id="pinned"></div><div class="group-gap"></div><h3 class="label subhead">Övriga</h3></div>
-    <div class="notes" id="notes"></div>
-    <p class="empty" id="empty" hidden>Inga anteckningar än. Skriv något i rutan högst upp så hamnar det här.</p>
-  </section>
-  </main>
-
-  <main id="view-section" class="view" hidden>
-    <a class="back" href="#" id="sec-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
-    <div class="page-head"><h2 class="page-title" id="sec-title">Projekt</h2><p class="tip" id="sec-tip" style="margin-left:auto"></p><button class="icon-btn" id="sec-edit" type="button" aria-label="Redigera sidan" title="Redigera sidan" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button></div>
-    <div id="sec-editbar" class="medit" hidden></div>
-    <div class="cards" id="sec-cards"></div>
-    <div id="sec-form"></div>
-    <div id="sec-dash" class="dash"></div>
   </main>
 
   <main id="view-project" class="view proj" hidden></main>
@@ -1057,7 +1069,7 @@ function rel(ts){
 function host(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
 // Ordning: anteckningar med "order" sorteras på den, äldre utan "order" hamnar efter datum (nyast först)
 function ord(v){return v.order!=null?v.order:-(v.updated||v.created||0)}
-function group(pinned){return Object.entries(items).filter(([,v])=>v.kind==="note"&&!!v.pinned===pinned).sort((a,b)=>ord(a[1])-ord(b[1])).map(e=>e[0])}
+function group(pinned){return Object.entries(items).filter(([,v])=>v.kind==="note"&&!v.project&&!!v.pinned===pinned).sort((a,b)=>ord(a[1])-ord(b[1])).map(e=>e[0])}
 function topOrder(pinned){const g=group(pinned);return g.length?ord(items[g[0]])-1:0}
 
 // ---------- Anteckningar ----------
@@ -1237,6 +1249,7 @@ let nextSecAdd=null;
 let secEdit=false, secAdd=false, menuNewSec=false, pageDirty=false, repoCache=null, repoErr="", repoOpen=false;
 const ICO_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>';
 const ICO_CODE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg>';
+const ICO_LINK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
 const ICO_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>';
 const ICO_FOLDER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>';
 function sectionList(){
@@ -1326,6 +1339,7 @@ function onRoute(){
 window.addEventListener("hashchange",onRoute);
 window.addEventListener("popstate",()=>{if(!location.hash)onRoute()});
 $("sec-back").onclick=e=>{e.preventDefault();go("")};
+$("links-back").onclick=e=>{e.preventDefault();go("")};
 
 // --- Sidomenyn (hopfällbar på datorn, utdragbar på mobilen) ---
 const K_SIDE="vardagssidan.side";
@@ -1354,7 +1368,7 @@ function setCollapsed(v){sideCollapsed=v;lsSet(K_SIDE,v?"collapsed":null);hideTi
 if(deskMQ.addEventListener)deskMQ.addEventListener("change",()=>{closeMenu();renderSide();renderPanel()});
 function projSection(){const l=sectionList();return l.find(([k])=>k==="s_projekt")||l.find(([,v])=>(v.title||"").trim().toLowerCase()==="projekt")||null}
 function sideItem(id,label,icon,count){
-  const cur=route==="oversikt"?"oversikt":getSection(route)?route:(route.startsWith("proj-")&&findItem(route.slice(5))?findItem(route.slice(5)).sid:"");
+  const cur=route==="lankar"?"lankar":route==="oversikt"?"oversikt":getSection(route)?route:(route.startsWith("proj-")&&findItem(route.slice(5))?findItem(route.slice(5)).sid:"");
   const a=html("a",{class:"s-item",href:id?"#"+encodeURIComponent(id):"#","data-tip":label},icon,el("span",{class:"lbl"},label),count!=null?el("span",{class:"count"},String(count)):null);
   if(cur===id)a.setAttribute("aria-current","page");
   a.addEventListener("click",e=>{e.preventDefault();closeMenu();go(id)});
@@ -1371,6 +1385,7 @@ function renderSide(){
     :html("button",{class:"s-toggle",type:"button","aria-label":collapsed?"Fäll ut menyn":"Fäll ihop menyn","data-tip":collapsed?"Fäll ut menyn":"","aria-expanded":String(!collapsed),onclick:()=>setCollapsed(!collapsed)},collapsed?I_SIDE_OUT:I_SIDE_IN);
   kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},LOGO_SVG),el("span",{class:"s-title"},"[tomasandersson]"),toggle));
   kids.push(sideItem("","Start",ICO_HOME));
+  kids.push(sideItem("lankar","Länkar",ICO_LINK,Object.values(items).filter(v=>v.kind==="link").length));
   sectionList().forEach(([sid,sec])=>kids.push(sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
   if(menuNewSec&&!collapsed){
     const f=el("form",{class:"s-form",autocomplete:"off"});
@@ -1827,11 +1842,11 @@ async function loadDash(force){
   if(dash.loading)return;
   if(!force&&dash.data&&dash.key===key&&Date.now()-dash.t<15*60*1000)return;
   dash.loading=true;dash.err="";if((projSection()&&route===projSection()[0]))renderPage(false);
-  const res={},fails=[];let limited=false;
+  const res={},fails=[];let limited=false,offline=false;
   await Promise.all(ps.filter(x=>x.repo).map(async x=>{
-    try{res[x.repo]=await repoStats(x.repo)}catch(e){if(e===403)limited=true;else fails.push({id:x.it.id,name:x.it.name,repo:x.repo,code:e})}
+    try{res[x.repo]=await repoStats(x.repo)}catch(e){if(e===403)limited=true;else if(typeof e!=="number")offline=true;else fails.push({id:x.it.id,name:x.it.name,repo:x.repo,code:e})}
   }));
-  dash={loading:false,data:res,t:Date.now(),key,fails,err:limited?"GitHub har tillfälligt stoppat frågor (för många på kort tid). Visar det som gick att hämta – försök igen om en stund.":""};
+  dash={loading:false,data:res,t:Date.now(),key,fails,err:limited?"GitHub har tillfälligt stoppat frågor (för många på kort tid). Visar det som gick att hämta – försök igen om en stund.":offline?"Kunde inte nå GitHub just nu. Kontrollera nätet och tryck på uppdatera-knappen.":""};
   lsSet(K_DASH,JSON.stringify(dash));
   if((projSection()&&route===projSection()[0]))renderPage(false);
 }
@@ -2085,7 +2100,7 @@ function card(sid,sec,it){
     el("span",{},el("span",{class:"name"},it.name),el("span",{class:"host"},link?host(link):(cRepoOf(it)?"github.com/"+cRepoOf(it):"Ingen webbsida"))));
   if(more&&!isProj)head.insertAdjacentHTML("beforeend",'<svg class="exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
   head.addEventListener("click",e=>{e.stopPropagation();toggle()});
-  const c=el("article",{class:"card"+(open&&!isProj?" open":"")+(more||isProj?" has-desc":"")+(isProj?" is-proj":""),"data-iid":it.id},head);
+  const c=el("article",{class:"card"+(isProj?" pcard":"")+(open&&!isProj?" open":"")+(more||isProj?" has-desc":"")+(isProj?" is-proj":""),"data-iid":it.id},head);
   c.addEventListener("pointerdown",e=>cardPress(e,c,sid));
   c.addEventListener("contextmenu",e=>{if(cdrag)e.preventDefault()});
   c.addEventListener("click",e=>{if(e.target.closest("a,button"))return;toggle()});
@@ -2095,7 +2110,7 @@ function card(sid,sec,it){
   const cRepo=repoOf(it),cLink=link||(cRepo?"https://github.com/"+cRepo:"");
   const ob=cLink?el("a",{class:"ibtn primary",href:cLink,target:"_blank",rel:"noopener",title:(link?"Öppna sidan – ":"Öppna repot – ")+cLink,"aria-label":"Öppna "+it.name}):null;if(ob)ob.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
   const eb=el("button",{class:"ibtn",type:"button",title:"Ändra","aria-label":"Ändra "+it.name,onclick:()=>{secAdd=it.id;repoOpen=false;renderPage(true);focusForm()}});eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
-  if(ob){if(!link)ob.innerHTML=ICO_CODE;acts.append(ob)}acts.append(eb);
+  if(!isProj){if(ob){if(!link)ob.innerHTML=ICO_CODE;acts.append(ob)}acts.append(eb)}
   if((it.tags||[]).length)acts.append(el("span",{class:"tags"},...tagChips(it.tags,t=>{tagFilter=tagFilter&&tagFilter.toLowerCase()===t.toLowerCase()?null:t;renderPage(true)})));
   if(imgs.length&&!open)acts.insertAdjacentHTML("beforeend",'<span class="imgcount" title="'+imgs.length+(imgs.length===1?' bild':' bilder')+'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.5"/></svg>'+imgs.length+'</span>');
   c.append(acts);
@@ -2278,6 +2293,10 @@ function moveSection(sid,delta){
   commit();
 }
 function renderPage(force){
+  const onLinks=route==="lankar";
+  $("view-links").hidden=!onLinks;
+  $("quick").hidden=!!route;   // anteckningsrutan bara på startsidan
+  if(onLinks){$("view-home").hidden=true;$("view-section").hidden=true;$("view-project").hidden=true;$("view-dash").hidden=true;document.title="Länkar – [tomasandersson]";return}
   const onDash=route==="oversikt";
   $("view-dash").hidden=!onDash;
   if(onDash){const ps=projSection();go(ps?ps[0]:"");return}   // gamla adressen #oversikt leder till Projekt
@@ -2292,7 +2311,6 @@ function renderPage(force){
   const view=$("view-section"),a=document.activeElement;
   if(cdrag){pageDirty=true;return}
   if(!force&&view.contains(a)&&a.tagName==="INPUT"){pageDirty=true;return}
-  $("sec-tip").textContent=(sec.items||[]).length>1&&!tagFilter?(touchUI()?"Håll in ett kort för att flytta":"Dra korten för att flytta"):"";
   pageDirty=false;
   const sid=route,list=sec.items||[];
   $("sec-title").textContent=sec.title||"Namnlös";
