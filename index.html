@@ -1407,15 +1407,35 @@ function probeImgW(url){return new Promise(res=>{const i=new Image();i.onload=()
 // Webbplatsens ikon (favicon): sajtens egen apple-touch-icon, annars Googles favicon-tjänst, annars favicon.ico
 const favLive=new Map();
 function favicon(url){
-  let origin,dom;try{const u=new URL(url);origin=u.origin;dom=u.hostname}catch(_){return Promise.resolve(null)}
-  const key="fav|"+origin;
+  let u;try{u=new URL(url)}catch(_){return Promise.resolve(null)}
+  // Mappen sidan ligger i (viktigt för GitHub Pages, där varje projekt ligger i en egen mapp)
+  const last=u.pathname.split("/").pop();
+  const dir=u.origin+(last&&!last.includes(".")?u.pathname+"/":u.pathname.replace(/[^\/]*$/,""));
+  const key="fav2|"+dir;
   const m=iconMemo[key];
   if(m&&Date.now()-m.t<7*24*3600*1000)return Promise.resolve(m.u?{u:m.u,w:m.w}:null);
   if(favLive.has(key))return favLive.get(key);
   const pr=(async()=>{
-    const cands=[[origin+"/apple-touch-icon.png",32],[origin+"/apple-touch-icon-precomposed.png",32],["https://www.google.com/s2/favicons?sz=128&domain="+encodeURIComponent(dom),32],[origin+"/favicon.ico",16]];
-    for(const [u,min] of cands){const w=await probeImgW(u);if(w>=min){iconMemo[key]={u,w,t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return {u,w}}}
-    iconMemo[key]={u:"",t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return null;
+    const save=r=>{iconMemo[key]=r?{u:r.u,w:r.w,t:Date.now()}:{u:"",t:Date.now()};lsSet(K_ICONS,JSON.stringify(iconMemo));return r};
+    // 1. Läs sidans egna <link rel="icon"> (fungerar för sidor som tillåter det, t.ex. GitHub Pages)
+    try{
+      const ctl=new AbortController();setTimeout(()=>ctl.abort(),5000);
+      const r=await fetch(url,{signal:ctl.signal,cache:"force-cache"});
+      if(r.ok&&/html/i.test(r.headers.get("content-type")||"")){
+        const doc=new DOMParser().parseFromString(await r.text(),"text/html");
+        const links=[...doc.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"],link[rel="apple-touch-icon-precomposed"]')]
+          .map(l=>{const sz=(l.getAttribute("sizes")||"").split("x")[0];return {href:new URL(l.getAttribute("href"),r.url||url).href,sz:+sz||(/apple/.test(l.rel)?180:0)}})
+          .sort((a,b)=>b.sz-a.sz);
+        for(const l of links){const w=await probeImgW(l.href);if(w>=16)return save({u:l.href,w})}
+      }
+    }catch(_){}
+    // 2. Vanliga filnamn i sidans mapp, sedan i roten, sedan Googles favicon-tjänst
+    const names=["apple-touch-icon.png","icon-192.png","icons/icon-192.png","icon-512.png","favicon.png","favicon.ico"];
+    const cands=names.map(n=>[dir+n,n.endsWith(".ico")?16:32]);
+    if(dir!==u.origin+"/")cands.push([u.origin+"/apple-touch-icon.png",32]);
+    cands.push(["https://www.google.com/s2/favicons?sz=128&domain="+encodeURIComponent(u.hostname),32],[u.origin+"/favicon.ico",16]);
+    for(const [c,min] of cands){const w=await probeImgW(c);if(w>=min)return save({u:c,w})}
+    return save(null);
   })();
   favLive.set(key,pr);return pr;
 }
