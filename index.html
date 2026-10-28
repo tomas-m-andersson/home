@@ -385,7 +385,29 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .card.pcard{min-height:150px}
 .card.pcard .acts{margin-top:auto}
 .card.pcard .acts .tags{justify-content:flex-start;padding-top:0}
-#view-links .links-sec{max-width:var(--colw)}
+/* Länksidan */
+.lk-top{display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:var(--colw)}
+.lk-top .back{margin-bottom:0}
+#edit-links{color:var(--muted)}
+.lcats{display:flex;flex-direction:column;gap:14px;max-width:var(--colw)}
+.lcat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow);min-width:0}
+.lc-head{display:flex;align-items:center;gap:6px;min-height:32px}
+.lc-name{margin:0;font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);flex:1;min-width:0;overflow-wrap:anywhere}
+.lc-n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.lc-title{flex:1;min-width:0;font:inherit;font-weight:600;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink)}
+.s-mini.danger{color:var(--danger)}
+.s-mini[disabled]{opacity:.35;cursor:default}
+.lcat .links{margin-left:0}
+.lcat .links.editing .link:not(.add-tile){animation:none;cursor:grab}
+.lcat .links.editing .link.placeholder{opacity:.3}
+.link.ghost{position:fixed;left:0;top:0;z-index:40;pointer-events:none;background:var(--surface);box-shadow:var(--lift);border:1px solid var(--line)}
+.link.press{transform:scale(.96);transition:transform .3s}
+.lcats .link{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.lc-empty{grid-column:1/-1;margin:2px 0 4px;font-size:13px;color:var(--muted)}
+.lcat .linkform{margin-top:6px;background:var(--bg)}
+.linkform select{flex:1 1 160px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--bg);font:inherit;color:var(--ink)}
+.lk-newcat{max-width:var(--colw);width:100%;border:1.5px dashed var(--line);border-radius:14px;padding:14px;background:transparent;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
+.lk-newcat:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
 
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
@@ -712,22 +734,21 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
   </main>
 
   <main id="view-links" class="view" hidden>
-    <a class="back" href="#" id="links-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
-    <div class="page-head"><h2 class="page-title" id="h-links">Länkar</h2></div>
-  <section aria-labelledby="h-links" class="links-sec">
-    
-    <div class="links-row">
-      <div class="links" id="links"></div>
-      <button class="icon-btn" id="edit-links" type="button" aria-label="Redigera länkar" title="Redigera länkar" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>
+    <div class="lk-top">
+      <a class="back" href="#" id="links-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Start</a>
+      <h2 class="sr" id="h-links">Länkar</h2>
+      <button class="icon-btn" id="edit-links" type="button" aria-label="Redigera länkar och kategorier" title="Redigera länkar och kategorier" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>
     </div>
+    <div class="lcats" id="lcats"></div>
+    <button class="newsec lk-newcat" id="lk-newcat" type="button">+ Ny kategori</button>
     <form class="linkform" id="linkform" hidden autocomplete="off">
       <input id="l-name" placeholder="Namn, t.ex. SVT Nyheter" aria-label="Namn">
       <input id="l-url" placeholder="Adress, t.ex. svt.se" aria-label="Adress" inputmode="url" autocapitalize="off">
+      <select id="l-cat" aria-label="Kategori"></select>
       <button class="btn primary" type="submit" id="l-submit">Lägg till</button>
       <button class="btn" type="button" id="l-cancel">Avbryt</button>
       <p class="hint" id="l-hint">Du behöver inte skriva https:// – det läggs till automatiskt.</p>
     </form>
-  </section>
   </main>
 
   <main id="view-project" class="view proj" hidden></main>
@@ -872,17 +893,19 @@ applyTheme();
 let fileExtra={};       // okända fält i data.json sparas orörda
 function toMap(file){
   const m={}; if(!file)return m;
-  fileExtra={};for(const k in file)if(!["notes","links","sections"].includes(k))fileExtra[k]=file[k];
+  fileExtra={};for(const k in file)if(!["notes","links","sections","linkcats"].includes(k))fileExtra[k]=file[k];
+  (file.linkcats||[]).forEach(x=>{const {id,...r}=x;m[id]={kind:"linkcat",...r}});
   (file.sections||[]).forEach(x=>{const {id,...r}=x;m[id]={kind:"section",...r}});
   (file.notes||[]).forEach(n=>{const {id,...r}=n;m[id]={kind:"note",...r}});
   (file.links||[]).forEach(l=>{const {id,...r}=l;m[id]={kind:"link",...r}});
   return m;
 }
 function fromMap(m){
-  const notes=[],links=[],sections=[];
-  for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r});else if(kind==="section")sections.push({id,...r})}
+  const notes=[],links=[],sections=[],linkcats=[];
+  for(const [id,v] of Object.entries(m)){const {kind,...r}=v;if(kind==="note")notes.push({id,...r});else if(kind==="link")links.push({id,...r});else if(kind==="section")sections.push({id,...r});else if(kind==="linkcat")linkcats.push({id,...r})}
+  linkcats.sort((a,b)=>(a.order||0)-(b.order||0));
   notes.sort((a,b)=>(!!b.pinned-!!a.pinned)||(ord(a)-ord(b))); links.sort((a,b)=>(a.order||0)-(b.order||0)); sections.sort((a,b)=>(a.order||0)-(b.order||0));
-  return {...fileExtra,notes,links,sections};
+  return {...fileExtra,notes,links,sections,linkcats};
 }
 function applyOps(m,ops){for(const o of ops){if(o.op==="put")m[o.id]=o.data;else delete m[o.id]}return m}
 
@@ -1224,22 +1247,139 @@ let lastCols=0;
 new ResizeObserver(()=>{const c=colCount();if(c!==lastCols){lastCols=c;if(!drag)renderNotes()}}).observe($("notes-sec"));
 
 // ---------- Länkar ----------
-function renderLinks(){
-  const links=Object.entries(items).filter(([,v])=>v.kind==="link").sort((a,b)=>(a[1].order||0)-(b[1].order||0));
-  const tiles=links.map(([k,v])=>{
-    const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url)},
-      withFavicon(el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),v.url),
-      el("span",{},v.name),
-      el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,title:"Ta bort",onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
-    const eb=el("button",{class:"e",type:"button","aria-label":"Ändra "+v.name,title:"Ändra",onclick:e=>{e.preventDefault();e.stopPropagation();openLinkForm(k)}});
-    eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
-    a.prepend(eb);
-    a.addEventListener("click",e=>{if($("links").classList.contains("editing"))e.preventDefault()});
-    return a;
-  });
-  tiles.push(el("button",{class:"link add-tile",type:"button",onclick:()=>openLinkForm()},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
-  $("links").replaceChildren(...tiles);
+// ---------- Länksidan: kategorier med länkar ----------
+let linkEdit=false,lkDirty=false,lkFocus=null;
+const LKF=document.getElementById("linkform");
+function linkCats(){return Object.entries(items).filter(([,v])=>v.kind==="linkcat").sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
+function linksIn(cat){const ids=new Set(linkCats().map(([k])=>k));return Object.entries(items).filter(([,v])=>v.kind==="link"&&((v.cat&&ids.has(v.cat)?v.cat:"")===cat)).sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
+function linkTile(k,v){
+  const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url),"data-lid":k},
+    withFavicon(el("div",{class:"mono",style:"background:"+MONO[(v.name.charCodeAt(0)+v.name.length)%MONO.length]},(v.name.trim()[0]||"?").toUpperCase()),v.url),
+    el("span",{},v.name),
+    el("button",{class:"x",type:"button","aria-label":"Ta bort "+v.name,title:"Ta bort",onclick:e=>{e.preventDefault();e.stopPropagation();removeLink(k)}},"×"));
+  const eb=el("button",{class:"e",type:"button","aria-label":"Ändra "+v.name,title:"Ändra",onclick:e=>{e.preventDefault();e.stopPropagation();openLinkForm(k)}});
+  eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+  a.prepend(eb);
+  a.addEventListener("click",e=>{if(linkEdit||Date.now()<lkClickBlock)e.preventDefault()});
+  a.setAttribute("draggable","false");
+  a.addEventListener("dragstart",e=>e.preventDefault());   // annars tar webbläsarens egen länk-dragning över
+  a.addEventListener("pointerdown",e=>lkPress(e,a));
+  a.addEventListener("contextmenu",e=>{if(linkEdit)e.preventDefault()});
+  return a;
 }
+function renderLinks(){
+  const box=$("lcats");if(!box)return;
+  if(ldrag){lkDirty=true;return}
+  const ae=document.activeElement;
+  if(box.contains(ae)&&ae.tagName==="INPUT"){lkDirty=true;return}
+  lkDirty=false;
+  const cats=linkCats(),loose=linksIn("");
+  const cards=[];
+  const mk=(cid,title,idx)=>{
+    const list=linksIn(cid);
+    const grid=el("div",{class:"links"+(linkEdit?" editing":""),"data-cat":cid},...list.map(([k,v])=>linkTile(k,v)),
+      el("button",{class:"link add-tile",type:"button",onclick:()=>openLinkForm(null,cid)},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
+    const card=el("section",{class:"lcat","data-cat":cid,"aria-label":title||"Länkar"});
+    if(cid&&linkEdit){
+      const t=el("input",{class:"lc-title",id:"lct-"+cid,value:title,"aria-label":"Kategorins namn",placeholder:"Namn på kategorin"});
+      const save=()=>{const v=t.value.trim()||"Namnlös";const c=items[cid];if(c&&c.title!==v)put(cid,{...c,title:v})};
+      t.addEventListener("change",save);
+      t.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();t.blur()}});
+      card.append(el("div",{class:"lc-head"},t,
+        el("button",{class:"s-mini",type:"button","aria-label":"Flytta upp",title:"Flytta upp",...(idx===0?{disabled:""}:{}),onclick:()=>moveCat(cid,-1)},"↑"),
+        el("button",{class:"s-mini",type:"button","aria-label":"Flytta ner",title:"Flytta ner",...(idx===cats.length-1?{disabled:""}:{}),onclick:()=>moveCat(cid,1)},"↓"),
+        html("button",{class:"s-mini danger",type:"button","aria-label":"Ta bort kategorin "+title,title:"Ta bort kategorin",onclick:()=>removeCat(cid)},'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>')));
+    }else if(title)card.append(el("div",{class:"lc-head"},el("h3",{class:"lc-name"},title),el("span",{class:"lc-n"},list.length?String(list.length):"")));
+    card.append(grid);
+    if(linkEdit&&!list.length)grid.prepend(el("p",{class:"lc-empty"},cid?"Dra hit länkar, eller tryck på + Ny länk.":"Länkar utan kategori hamnar här."));
+    return card;
+  };
+  if(loose.length||!cats.length||linkEdit&&cats.length)cards.push(mk("",cats.length?"Övrigt":"",-1));
+  cats.forEach(([cid,c],i)=>cards.push(mk(cid,c.title||"Namnlös",i)));
+  box.replaceChildren(...cards);
+  box.classList.toggle("editing",linkEdit);
+  // Formuläret visas i det kort det hör till
+  const f=LKF;
+  if(!f.hidden){const target=box.querySelector('.lcat[data-cat="'+(f.dataset.cat||"")+'"]');if(target)target.append(f);else $("lk-newcat").after(f)}
+  else if(!f.isConnected||f.parentElement!==$("view-links"))$("lk-newcat").after(f);   // gömt formulär läggs tillbaka så det alltid går att hitta
+  if(lkFocus){const t=$(lkFocus);lkFocus=null;if(t){t.focus();t.select()}}
+}
+function moveCat(cid,d){
+  const list=linkCats().map(([k])=>k),i=list.indexOf(cid),j=i+d;if(j<0||j>=list.length)return;
+  list.splice(i,1);list.splice(j,0,cid);
+  list.forEach((k,n)=>{if(items[k].order!==n+1){items[k]={...items[k],order:n+1};pending.push({op:"put",id:k,data:items[k]})}});
+  commit();
+}
+function removeCat(cid){
+  const c=items[cid];if(!c)return;
+  const moved=Object.entries(items).filter(([,v])=>v.kind==="link"&&v.cat===cid).map(([k])=>k);
+  moved.forEach(k=>{const v={...items[k]};delete v.cat;items[k]=v;pending.push({op:"put",id:k,data:v})});
+  del(cid);
+  toast("Kategorin ”"+(c.title||"")+"” togs bort"+(moved.length?" – länkarna ligger under Övrigt":""),()=>{
+    items[cid]=c;pending.push({op:"put",id:cid,data:c});
+    moved.forEach(k=>{if(items[k]){items[k]={...items[k],cat:cid};pending.push({op:"put",id:k,data:items[k]})}});commit();
+  });
+}
+$("lk-newcat").onclick=()=>{
+  const id=uid("lc_"),max=Math.max(0,...linkCats().map(([,v])=>v.order||0));
+  linkEdit=true;setLinkEditBtn();lkFocus="lct-"+id;
+  put(id,{kind:"linkcat",title:"Ny kategori",order:max+1});
+  setTimeout(()=>{const c=document.querySelector('.lcat[data-cat="'+id+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"})},50);
+};
+$("lcats").addEventListener("focusout",()=>setTimeout(()=>{if(lkDirty&&!$("lcats").contains(document.activeElement))renderLinks()},0));
+
+// Dra länkar (i redigeringsläget) – inom ett kort eller till ett annat
+let ldrag=null,lkClickBlock=0;
+function lkPress(e,a){
+  if(!linkEdit||e.button!==0||ldrag||e.target.closest(".e,.x"))return;
+  ldrag={a,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,pid:e.pointerId,touch:e.pointerType!=="mouse",active:false};
+  if(ldrag.touch){a.classList.add("press");ldrag.timer=setTimeout(()=>{if(ldrag&&!ldrag.active)lkStart()},350)}
+}
+function lkStart(){
+  const d=ldrag,r=d.a.getBoundingClientRect();
+  d.active=true;d.a.classList.remove("press");d.ox=d.x-r.left;d.oy=d.y-r.top;
+  const g=d.a.cloneNode(true);g.classList.add("ghost");g.style.width=r.width+"px";g.style.height=r.height+"px";
+  document.body.append(g);d.ghost=g;d.a.classList.add("placeholder");document.body.classList.add("dragging");
+  try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}
+  lkMoveGhost();
+}
+function lkMoveGhost(){const d=ldrag;d.ghost.style.transform="translate("+(d.x-d.ox)+"px,"+(d.y-d.oy)+"px) rotate(1.5deg)"}
+function lkMove(){
+  const d=ldrag;lkMoveGhost();
+  const under=document.elementFromPoint(d.x,d.y);if(!under)return;
+  const t=under.closest("#lcats .link[data-lid]");
+  if(t&&t!==d.a){
+    if(t.parentElement===d.a.parentElement){const sib=[...t.parentElement.children];if(sib.indexOf(d.a)<sib.indexOf(t))t.after(d.a);else t.before(d.a)}
+    else t.before(d.a);
+  }else if(!t){
+    const card=under.closest("#lcats .lcat");
+    if(card){const grid=card.querySelector(".links");if(grid&&d.a.parentElement!==grid){const add=grid.querySelector(".add-tile");grid.insertBefore(d.a,add);const em=grid.querySelector(".lc-empty");if(em)em.remove()}}
+  }
+  const edge=70;
+  if(d.y<edge)window.scrollBy(0,-Math.ceil((edge-d.y)/5));else if(d.y>innerHeight-edge)window.scrollBy(0,Math.ceil((d.y-(innerHeight-edge))/5));
+}
+function lkCancel(){if(!ldrag)return;clearTimeout(ldrag.timer);ldrag.a.classList.remove("press");ldrag=null}
+function lkEnd(){
+  const d=ldrag;if(!d)return;if(!d.active){lkCancel();return}
+  ldrag=null;d.ghost.remove();d.a.classList.remove("placeholder");document.body.classList.remove("dragging");lkClickBlock=Date.now()+350;
+  let n=0,changed=false;
+  document.querySelectorAll("#lcats .links").forEach(grid=>{
+    const cat=grid.dataset.cat||"";
+    grid.querySelectorAll(".link[data-lid]").forEach(t=>{
+      const k=t.dataset.lid,v=items[k];if(!v)return;n++;
+      if(v.order!==n||(v.cat||"")!==cat){const nv={...v,order:n};if(cat)nv.cat=cat;else delete nv.cat;items[k]=nv;pending.push({op:"put",id:k,data:nv});changed=true}
+    });
+  });
+  if(changed)commit();else renderLinks();
+}
+document.addEventListener("pointermove",e=>{
+  const d=ldrag;if(!d||e.pointerId!==d.pid)return;d.x=e.clientX;d.y=e.clientY;
+  if(!d.active){const dist=Math.hypot(d.x-d.sx,d.y-d.sy);if(d.touch){if(dist>10)lkCancel()}else if(dist>6)lkStart();return}
+  lkMove();
+});
+document.addEventListener("pointerup",e=>{if(ldrag&&e.pointerId===ldrag.pid)lkEnd()});
+document.addEventListener("pointercancel",e=>{if(ldrag&&e.pointerId===ldrag.pid){ldrag.active?lkEnd():lkCancel()}});
+document.addEventListener("touchmove",e=>{if(ldrag&&ldrag.active)e.preventDefault()},{passive:false});
 function render(){renderNotes();renderLinks();renderSide();renderPage();renderPanel()}
 
 
@@ -1333,7 +1473,7 @@ function go(id){
 }
 function onRoute(){
   route=decodeURIComponent(location.hash.slice(1));
-  tagFilter=nextTagFilter;nextTagFilter=null;secEdit=false;secAdd=nextSecAdd||false;nextSecAdd=null;repoOpen=false;pjEdit={};pjLinkForm=null;
+  tagFilter=nextTagFilter;nextTagFilter=null;secEdit=false;if(linkEdit){linkEdit=false;setLinkEditBtn()}secAdd=nextSecAdd||false;nextSecAdd=null;repoOpen=false;pjEdit={};pjLinkForm=null;
   renderPage(true);renderSide();window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",onRoute);
@@ -1426,7 +1566,7 @@ function renderSide(){
 (function(){
   let mode=null,sx=0,sy=0,st=0,dx=0,w=0;
   const side=$("side"),scrim=$("menu-scrim");
-  const blocked=()=>deskMQ.matches||!!tdrag||!!(cdrag&&cdrag.active)||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
+  const blocked=()=>deskMQ.matches||!!(ldrag&&ldrag.active)||!!tdrag||!!(cdrag&&cdrag.active)||!$("lb").hidden||editing||!$("set-scrim").hidden||!$("note-scrim").hidden||!!panelItem||(drag&&drag.active);
   function reset(){side.style.transition="";side.style.transform="";side.style.visibility="";scrim.style.opacity="";scrim.style.transition=""}
   document.addEventListener("touchstart",e=>{
     mode=null;
@@ -2440,11 +2580,15 @@ document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("lb").h
 
 // ---------- Länkar: lägg till / ta bort ----------
 let editLinkId=null;
-function openLinkForm(id){
+function openLinkForm(id,cat){
   const v=id?items[id]:null;editLinkId=v?id:null;
+  const cur=v?(v.cat&&items[v.cat]?v.cat:""):(cat||"");
+  const sel=$("l-cat");sel.replaceChildren(el("option",{value:""},linkCats().length?"Övrigt (ingen kategori)":"Ingen kategori"),...linkCats().map(([k,c])=>el("option",{value:k},c.title||"Namnlös")));
+  sel.value=cur;sel.hidden=!linkCats().length;
+  $("linkform").dataset.cat=cur;
   $("l-name").value=v?v.name:"";$("l-url").value=v?v.url:"";
   $("l-submit").textContent=v?"Spara ändringar":"Lägg till";
-  $("linkform").hidden=false;$("l-hint").className="hint";$("l-hint").textContent=v?"Ändrar ”"+v.name+"”. Du behöver inte skriva https://.":"Du behöver inte skriva https:// – det läggs till automatiskt.";
+  $("linkform").hidden=false;renderLinks();$("l-hint").className="hint";$("l-hint").textContent=v?"Ändrar ”"+v.name+"”. Du behöver inte skriva https://.":"Du behöver inte skriva https:// – det läggs till automatiskt.";
   if(!touchUI())$("l-name").focus();$("linkform").scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 $("l-cancel").onclick=()=>{$("linkform").hidden=true;$("linkform").reset();editLinkId=null};
@@ -2455,13 +2599,17 @@ $("linkform").addEventListener("submit",e=>{
   if(!/^https?:\/\//i.test(url))url="https://"+url;
   try{const u=new URL(url);if(!u.hostname.includes("."))throw 0}catch(_){$("l-hint").className="hint err";$("l-hint").textContent="Adressen ser inte rätt ut. Prova till exempel smhi.se.";$("l-url").focus();return}
   if(!name)name=host(url);
-  if(editLinkId&&items[editLinkId]){put(editLinkId,{...items[editLinkId],name,url});toast("Länken är ändrad")}
-  else{const max=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0));put(uid("l_"),{kind:"link",name,url,order:max+1})}
+  const cat=$("l-cat").value;
+  if(editLinkId&&items[editLinkId]){const nv={...items[editLinkId],name,url};if(cat)nv.cat=cat;else delete nv.cat;
+    if((items[editLinkId].cat||"")!==cat)nv.order=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0))+1;
+    put(editLinkId,nv);toast("Länken är ändrad")}
+  else{const max=Math.max(0,...Object.values(items).filter(v=>v.kind==="link").map(v=>v.order||0));const nv={kind:"link",name,url,order:max+1};if(cat)nv.cat=cat;put(uid("l_"),nv)}
   editLinkId=null;$("linkform").reset(); $("linkform").hidden=true;
 });
 function removeLink(id){const v=items[id];del(id);toast("Länken togs bort",()=>put(id,v))}
 const I_PEN_SM=$("edit-links").innerHTML,I_CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-$("edit-links").onclick=()=>{const on=$("links").classList.toggle("editing");const b=$("edit-links");b.innerHTML=on?I_CHECK:I_PEN_SM;b.setAttribute("aria-pressed",String(on));b.setAttribute("aria-label",on?"Klar med länkarna":"Redigera länkar");b.title=on?"Klar":"Redigera länkar"};
+function setLinkEditBtn(){const b=$("edit-links"),on=linkEdit;b.innerHTML=on?I_CHECK:I_PEN_SM;b.setAttribute("aria-pressed",String(on));b.setAttribute("aria-label",on?"Klar med länkarna":"Redigera länkar och kategorier");b.title=on?"Klar":"Redigera länkar och kategorier"}
+$("edit-links").onclick=()=>{if(document.activeElement&&$("lcats").contains(document.activeElement))document.activeElement.blur();linkEdit=!linkEdit;setLinkEditBtn();renderLinks()};
 
 // ---------- Toast ----------
 let tTimer;
