@@ -396,6 +396,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lc-n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .lc-title{flex:1;min-width:0;font:inherit;font-weight:600;font-size:15px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink)}
 .s-mini.danger{color:var(--danger)}
+.s-mini-gap{width:30px;flex-shrink:0}
 .s-mini[disabled]{opacity:.35;cursor:default}
 .lcat .links{margin-left:0}
 .lcat .links.editing .link:not(.add-tile){animation:none;cursor:grab}
@@ -1250,7 +1251,12 @@ new ResizeObserver(()=>{const c=colCount();if(c!==lastCols){lastCols=c;if(!drag)
 // ---------- Länksidan: kategorier med länkar ----------
 let linkEdit=false,lkDirty=false,lkFocus=null;
 const LKF=document.getElementById("linkform");
-function linkCats(){return Object.entries(items).filter(([,v])=>v.kind==="linkcat").sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
+const DEF_CAT="lc_default";   // kortet för länkar utan egen kategori ("Övrigt")
+function linkCats(){return Object.entries(items).filter(([k,v])=>v.kind==="linkcat"&&k!==DEF_CAT).sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
+function defCat(){return items[DEF_CAT]||{kind:"linkcat",title:"Övrigt",order:0}}
+function defTitle(){return (items[DEF_CAT]&&items[DEF_CAT].title)||"Övrigt"}
+// Alla kort i ordning, även Övrigt (id "" i sidan)
+function allCatOrder(){return [["",defCat()],...linkCats()].sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
 function linksIn(cat){const ids=new Set(linkCats().map(([k])=>k));return Object.entries(items).filter(([,v])=>v.kind==="link"&&((v.cat&&ids.has(v.cat)?v.cat:"")===cat)).sort((a,b)=>(a[1].order||0)-(b[1].order||0))}
 function linkTile(k,v){
   const a=el("a",{class:"link",href:v.url,target:"_blank",rel:"noopener",title:host(v.url),"data-lid":k},
@@ -1280,22 +1286,26 @@ function renderLinks(){
     const grid=el("div",{class:"links"+(linkEdit?" editing":""),"data-cat":cid},...list.map(([k,v])=>linkTile(k,v)),
       el("button",{class:"link add-tile",type:"button",onclick:()=>openLinkForm(null,cid)},el("div",{class:"mono"},"+"),el("span",{},"Ny länk")));
     const card=el("section",{class:"lcat","data-cat":cid,"aria-label":title||"Länkar"});
-    if(cid&&linkEdit){
-      const t=el("input",{class:"lc-title",id:"lct-"+cid,value:title,"aria-label":"Kategorins namn",placeholder:"Namn på kategorin"});
-      const save=()=>{const v=t.value.trim()||"Namnlös";const c=items[cid];if(c&&c.title!==v)put(cid,{...c,title:v})};
+    if(linkEdit){
+      const t=el("input",{class:"lc-title",id:"lct-"+(cid||DEF_CAT),value:title,"aria-label":"Kategorins namn",placeholder:"Namn på kategorin"});
+      const save=()=>{const v=t.value.trim()||(cid?"Namnlös":"Övrigt");if(cid){const c=items[cid];if(c&&c.title!==v)put(cid,{...c,title:v})}else if(v!==defTitle())put(DEF_CAT,{...defCat(),title:v})};
       t.addEventListener("change",save);
       t.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();t.blur()}});
       card.append(el("div",{class:"lc-head"},t,
         el("button",{class:"s-mini",type:"button","aria-label":"Flytta upp",title:"Flytta upp",...(idx===0?{disabled:""}:{}),onclick:()=>moveCat(cid,-1)},"↑"),
-        el("button",{class:"s-mini",type:"button","aria-label":"Flytta ner",title:"Flytta ner",...(idx===cats.length-1?{disabled:""}:{}),onclick:()=>moveCat(cid,1)},"↓"),
-        html("button",{class:"s-mini danger",type:"button","aria-label":"Ta bort kategorin "+title,title:"Ta bort kategorin",onclick:()=>removeCat(cid)},'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>')));
+        el("button",{class:"s-mini",type:"button","aria-label":"Flytta ner",title:"Flytta ner",...(idx===order.length-1?{disabled:""}:{}),onclick:()=>moveCat(cid,1)},"↓"),
+        cid?html("button",{class:"s-mini danger",type:"button","aria-label":"Ta bort kategorin "+title,title:"Ta bort kategorin",onclick:()=>removeCat(cid)},'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>'):el("span",{class:"s-mini-gap","aria-hidden":"true"})));
     }else if(title)card.append(el("div",{class:"lc-head"},el("h3",{class:"lc-name"},title),el("span",{class:"lc-n"},list.length?String(list.length):"")));
     card.append(grid);
     if(linkEdit&&!list.length)grid.prepend(el("p",{class:"lc-empty"},cid?"Dra hit länkar, eller tryck på + Ny länk.":"Länkar utan kategori hamnar här."));
     return card;
   };
-  if(loose.length||!cats.length||linkEdit&&cats.length)cards.push(mk("",cats.length?"Övrigt":"",-1));
-  cats.forEach(([cid,c],i)=>cards.push(mk(cid,c.title||"Namnlös",i)));
+  const order=allCatOrder();
+  order.forEach(([cid,c],i)=>{
+    if(!cid){
+      if(loose.length||!cats.length||linkEdit)cards.push(mk("",cats.length||items[DEF_CAT]||linkEdit?defTitle():"",i));
+    }else cards.push(mk(cid,c.title||"Namnlös",i));
+  });
   box.replaceChildren(...cards);
   box.classList.toggle("editing",linkEdit);
   // Formuläret visas i det kort det hör till
@@ -1305,9 +1315,10 @@ function renderLinks(){
   if(lkFocus){const t=$(lkFocus);lkFocus=null;if(t){t.focus();t.select()}}
 }
 function moveCat(cid,d){
-  const list=linkCats().map(([k])=>k),i=list.indexOf(cid),j=i+d;if(j<0||j>=list.length)return;
-  list.splice(i,1);list.splice(j,0,cid);
-  list.forEach((k,n)=>{if(items[k].order!==n+1){items[k]={...items[k],order:n+1};pending.push({op:"put",id:k,data:items[k]})}});
+  const id=cid||DEF_CAT;
+  const list=allCatOrder().map(([k])=>k||DEF_CAT),i=list.indexOf(id),j=i+d;if(j<0||j>=list.length)return;
+  list.splice(i,1);list.splice(j,0,id);
+  list.forEach((k,n)=>{const cur=k===DEF_CAT?defCat():items[k];if(!items[k]||cur.order!==n+1){items[k]={...cur,order:n+1};pending.push({op:"put",id:k,data:items[k]})}});
   commit();
 }
 function removeCat(cid){
@@ -1315,13 +1326,13 @@ function removeCat(cid){
   const moved=Object.entries(items).filter(([,v])=>v.kind==="link"&&v.cat===cid).map(([k])=>k);
   moved.forEach(k=>{const v={...items[k]};delete v.cat;items[k]=v;pending.push({op:"put",id:k,data:v})});
   del(cid);
-  toast("Kategorin ”"+(c.title||"")+"” togs bort"+(moved.length?" – länkarna ligger under Övrigt":""),()=>{
+  toast("Kategorin ”"+(c.title||"")+"” togs bort"+(moved.length?" – länkarna ligger under "+defTitle():""),()=>{
     items[cid]=c;pending.push({op:"put",id:cid,data:c});
     moved.forEach(k=>{if(items[k]){items[k]={...items[k],cat:cid};pending.push({op:"put",id:k,data:items[k]})}});commit();
   });
 }
 $("lk-newcat").onclick=()=>{
-  const id=uid("lc_"),max=Math.max(0,...linkCats().map(([,v])=>v.order||0));
+  const id=uid("lc_"),max=Math.max(0,...allCatOrder().map(([,v])=>v.order||0));
   linkEdit=true;setLinkEditBtn();lkFocus="lct-"+id;
   put(id,{kind:"linkcat",title:"Ny kategori",order:max+1});
   setTimeout(()=>{const c=document.querySelector('.lcat[data-cat="'+id+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"})},50);
@@ -2603,7 +2614,7 @@ let editLinkId=null;
 function openLinkForm(id,cat){
   const v=id?items[id]:null;editLinkId=v?id:null;
   const cur=v?(v.cat&&items[v.cat]?v.cat:""):(cat||"");
-  const sel=$("l-cat");sel.replaceChildren(el("option",{value:""},linkCats().length?"Övrigt (ingen kategori)":"Ingen kategori"),...linkCats().map(([k,c])=>el("option",{value:k},c.title||"Namnlös")));
+  const sel=$("l-cat");sel.replaceChildren(el("option",{value:""},linkCats().length?defTitle():"Ingen kategori"),...linkCats().map(([k,c])=>el("option",{value:k},c.title||"Namnlös")));
   sel.value=cur;sel.hidden=!linkCats().length;
   $("linkform").dataset.cat=cur;
   $("l-name").value=v?v.name:"";$("l-url").value=v?v.url:"";
