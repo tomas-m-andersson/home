@@ -410,6 +410,14 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lk-newcat{max-width:var(--colw);width:100%;border:1.5px dashed var(--line);border-radius:14px;padding:14px;background:transparent;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
 .lk-newcat:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
 
+/* Kalender */
+.calv{gap:0;max-width:none}
+.cal-tools{display:flex;justify-content:flex-end;gap:4px;margin:-6px 0 6px}
+.cal-tools .icon-btn{color:var(--muted)}
+.cal-tools .icon-btn:hover{color:var(--ink)}
+#cal-frame{display:block;width:100%;height:70vh;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+@media (max-width:600px){#cal-frame{width:calc(100% + 2 * max(16px,env(safe-area-inset-left,0px)));margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));border-radius:0;border-inline:0;box-shadow:none}.cal-tools{margin:-4px 0 6px}}
+
 /* Taggar */
 .dtags{display:flex;flex-direction:column;gap:4px}
 .dtg{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:0;background:transparent;font:inherit;color:inherit;text-align:left;width:100%;box-sizing:border-box}
@@ -754,6 +762,14 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
 
   <main id="view-project" class="view proj" hidden></main>
 
+  <main id="view-cal" class="view calv" hidden>
+    <div class="cal-tools">
+      <a class="icon-btn" id="cal-open" href="../kalender/" target="_blank" rel="noopener" aria-label="Öppna kalendern i en egen flik" title="Öppna i egen flik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+      <button class="icon-btn" id="cal-edit" type="button" aria-label="Byt namn på, flytta eller ta bort sidan" title="Redigera sidan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>
+    </div>
+    <iframe id="cal-frame" title="Kalender" loading="lazy"></iframe>
+  </main>
+
   <main id="view-dash" class="view dash" hidden></main>
 </div>
 </div>
@@ -883,7 +899,7 @@ function applyTheme(){
   document.querySelector('meta[name="theme-color"]').setAttribute("content",dark?"#141917":"#F2F4F1");
   document.querySelectorAll("[data-theme-choice]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.themeChoice===c)));
 }
-function setTheme(c){lsSet(K_THEME,c==="auto"?null:c);applyTheme()}
+function setTheme(c){lsSet(K_THEME,c==="auto"?null:c);applyTheme();if(typeof calTheme==="function")calTheme()}
 document.querySelectorAll("[data-theme-choice]").forEach(b=>b.onclick=()=>setTheme(b.dataset.themeChoice));
 if(darkMQ.addEventListener)darkMQ.addEventListener("change",applyTheme);
 applyTheme();
@@ -1400,6 +1416,26 @@ let nextSecAdd=null;
 let secEdit=false, secAdd=false, menuNewSec=false, pageDirty=false, repoCache=null, repoErr="", repoOpen=false;
 const ICO_HOME='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></svg>';
 const ICO_CODE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4"/></svg>';
+const ICO_CAL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+// ---------- Kalendern (appen i repot "kalender", visas inbäddad) ----------
+const CAL_URL="../kalender/";
+function isCalSec(sec){return (sec.title||"").trim().toLowerCase()==="kalender"}
+function calSize(){
+  const f=$("cal-frame");if($("view-cal").hidden)return;
+  const top=f.getBoundingClientRect().top+window.scrollY;
+  f.style.height=Math.max(460,window.innerHeight-top-14)+"px";
+}
+function calTheme(){
+  // Kalendern följer sidans ljust/mörkt-val medan den visas här (sparas inte i kalenderns egna inställningar)
+  try{const d=$("cal-frame").contentDocument;if(!d)return;const c=themeChoice();
+    if(c==="auto")d.documentElement.removeAttribute("data-theme");else d.documentElement.setAttribute("data-theme",c)}catch(_){}
+}
+function showCal(){
+  const f=$("cal-frame");
+  if(!f.getAttribute("src")){f.setAttribute("src",CAL_URL);f.addEventListener("load",()=>{calTheme();calSize()})}
+  requestAnimationFrame(calSize);
+}
+window.addEventListener("resize",calSize);
 const ICO_LINK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
 const ICO_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V6M17 16v-8"/></svg>';
 const ICO_FOLDER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>';
@@ -1557,7 +1593,7 @@ function renderSide(){
   kids.push(el("div",{class:"s-head"},html("span",{class:"s-logo","aria-hidden":"true"},LOGO_SVG),el("span",{class:"s-title"},"[tomasandersson]"),toggle));
   kids.push(sideItem("","Start",ICO_HOME));
   kids.push(sideItem("lankar","Länkar",ICO_LINK,Object.values(items).filter(v=>v.kind==="link").length));
-  sectionList().forEach(([sid,sec])=>kids.push(sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
+  sectionList().forEach(([sid,sec])=>kids.push(isCalSec(sec)?sideItem(sid,sec.title||"Kalender",ICO_CAL):sideItem(sid,sec.title||"Namnlös",sid==="s_projekt"||(sec.title||"").toLowerCase()==="projekt"?ICO_CODE:ICO_FOLDER,(sec.items||[]).length)));
   if(menuNewSec&&!collapsed){
     const f=el("form",{class:"s-form",autocomplete:"off"});
     const t=el("input",{id:"m-newsec",placeholder:"Namn, t.ex. Skola","aria-label":"Namn på ny sektion"});
@@ -2475,6 +2511,9 @@ function renderPage(force){
   $("view-project").hidden=!onProj;
   if(onProj){$("view-home").hidden=true;$("view-section").hidden=true;renderProject(force);return}
   const sec=route?getSection(route):null;
+  const onCal=!!(sec&&isCalSec(sec)&&!secEdit);
+  $("view-cal").hidden=!onCal;
+  if(onCal){$("view-home").hidden=true;$("view-section").hidden=true;document.title=(sec.title||"Kalender")+" – [tomasandersson]";showCal();return}
   const onSec=!!sec;
   $("view-home").hidden=onSec;$("view-section").hidden=!onSec;
   document.title=onSec?(sec.title||"Sida")+" – [tomasandersson]":"[tomasandersson]";
@@ -2508,6 +2547,7 @@ function renderPage(force){
   const shown=tagFilter?list.filter(it=>(it.tags||[]).some(t=>t.toLowerCase()===tagFilter.toLowerCase())):list;
   const cards=shown.map(it=>card(sid,sec,it));
   if(tagFilter)cards.unshift(el("div",{class:"tagbar"},el("span",{},"Visar projekt med ",el("b",{},"#"+tagFilter)," ("+shown.length+")"),el("button",{class:"btn",type:"button",onclick:()=>{tagFilter=null;renderPage(true)}},"Visa alla")));
+  if(isCalSec(sec)){$("sec-cards").replaceChildren();$("sec-form").replaceChildren(el("p",{class:"hint"},"Den här sidan visar din kalender. Tryck på bocken uppe till höger när du är klar."));$("sec-dash").replaceChildren();return}
   $("sec-dash").replaceChildren(...(projSection()&&projSection()[0]===sid?dashNodes():[]));
   setTimeout(()=>{
     // Taggarna får plats på högst två rader till höger om knapparna – resten blir "+N"
@@ -2534,6 +2574,7 @@ function renderPage(force){
   $("sec-form").replaceChildren(...(secAdd?[addForm(sid,sec)]:list.length?[]:[el("p",{class:"sec-empty"},sid==="s_projekt"?"Inga projekt än. Tryck på ”+ Lägg till” och sedan ”Välj från GitHub”.":"Inga länkar än.")]));
 }
 $("sec-edit").onclick=()=>{secEdit=!secEdit;secAdd=false;repoOpen=false;renderPage(true)};
+$("cal-edit").onclick=()=>{secEdit=true;secAdd=false;renderPage(true)};
 $("view-section").addEventListener("focusout",()=>setTimeout(()=>{if(pageDirty&&!$("view-section").contains(document.activeElement))renderPage(true)},0));
 
 // ---------- Färgväljare ----------
