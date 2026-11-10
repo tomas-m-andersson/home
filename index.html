@@ -410,6 +410,42 @@ body.dragging,body.dragging *{cursor:grabbing!important}
 .lk-newcat{max-width:var(--colw);width:100%;border:1.5px dashed var(--line);border-radius:14px;padding:14px;background:transparent;color:var(--muted);font:inherit;font-weight:600;cursor:pointer}
 .lk-newcat:hover{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 30%,var(--line))}
 
+/* Favoriter */
+.fav-div{margin:14px 4px 10px}
+.fav-title{display:flex;align-items:center;gap:6px}
+.fav-title svg{width:13px;height:13px;color:#E0A526}
+.collapsed .fav-title{display:flex}
+.collapsed .fav-title{font-size:0;gap:0}
+.collapsed .fav-title svg{width:16px;height:16px}
+.fav-empty{font-size:13px;color:var(--muted);margin:2px 10px 0;line-height:1.45}
+.fav-list{display:flex;flex-direction:column;gap:1px;width:100%}
+.f-row{position:relative;display:flex;align-items:center}
+.f-item{flex:1;min-width:0;height:40px;gap:12px}
+.f-item .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.f-item .lbl small{color:var(--muted);font-size:12px;font-weight:500}
+.mono.fs{width:24px;height:24px;border-radius:50%;font-size:12px;flex-shrink:0}
+.mono.fs.fav-small{padding:4px}
+.fs-note{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex-shrink:0;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.fs-note svg{width:15px;height:15px}
+.f-off{position:absolute;right:4px;width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;opacity:0;padding:0}
+.f-off svg{width:14px;height:14px}
+.f-row:hover .f-off,.f-off:focus-visible{opacity:1}
+.f-row:hover .f-item .lbl{padding-right:26px}
+.f-off:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.collapsed .f-item{height:40px}
+.fav-btn[aria-pressed="true"]{color:#E0A526}
+.fav-btn[aria-pressed="true"]:hover{color:#C98F12}
+.ibtn.fav-btn[aria-pressed="true"]{background:color-mix(in srgb,#E9B949 16%,var(--surface));border-color:color-mix(in srgb,#E9B949 55%,var(--line))}
+#d-fav{margin-right:4px;vertical-align:middle}
+#d-fav svg{width:20px;height:20px}
+.nfav svg{width:12px;height:12px;color:#E0A526;vertical-align:-1px;margin-right:4px}
+.link .f{position:absolute;top:34px;right:4px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;display:none;padding:0;place-items:center;z-index:1}
+.link .f svg{width:14px;height:14px}
+.links.editing .link .f{display:grid}
+.link .f[aria-pressed="true"],.s-mini.fav-btn[aria-pressed="true"]{color:#E0A526;background:transparent}
+.todo.flash{box-shadow:0 0 0 3px color-mix(in srgb,#E9B949 60%,transparent);transition:box-shadow .3s}
+@media (hover:none){.f-off{opacity:.55}.f-item .lbl{padding-right:26px}}
+
 /* Kalender */
 .calv{gap:0;max-width:none}
 .cal-tools{display:flex;justify-content:flex-end;gap:4px;margin:-6px 0 6px}
@@ -671,6 +707,8 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
   .links.editing .link span{order:1;flex:1;text-align:left;font-size:15px}
   .links.editing .link .e,.links.editing .link .x{position:static;width:44px;height:44px;border-radius:10px;font-size:22px;flex-shrink:0}
   .links.editing .link .e{order:2}
+  .links.editing .link .f{position:static;width:44px;height:44px;border-radius:10px;flex-shrink:0;order:2}
+  .links.editing .link .f svg{width:20px;height:20px}
   .links.editing .link .x{order:3;color:var(--danger)}
   .links.editing .link .e svg{width:18px;height:18px}
   .links.editing .add-tile{border-style:dashed;background:transparent}
@@ -786,7 +824,7 @@ label.s-mini:focus-within{outline:2px solid var(--focus)}
     <textarea id="d-text" placeholder="Anteckning" aria-label="Anteckning"></textarea>
     <div class="bar">
       <div class="swatches" id="d-sw"></div>
-      <div><button type="button" class="btn danger" id="d-del">Ta bort</button><button type="submit" class="btn primary">Klar</button></div>
+      <div><button type="button" class="icon-btn fav-btn" id="d-fav" aria-pressed="false" aria-label="Lägg till i Favoriter" title="Lägg till i Favoriter"></button><button type="button" class="btn danger" id="d-del">Ta bort</button><button type="submit" class="btn primary">Klar</button></div>
     </div>
   </form>
 </div>
@@ -1131,7 +1169,7 @@ function buildNote(id){
 }
 function fillNote(card,n){
   const pf=n.project?findItem(n.project):null;
-  const sig=JSON.stringify([n.title,n.text,n.color,n.pinned,n.updated,pf?pf.it.name:""]);
+  const sig=JSON.stringify([n.title,n.text,n.color,n.pinned,n.updated,pf?pf.it.name:"",!!n.fav]);
   if(card._sig===sig)return;
   card._sig=sig;
   card.style.background="var(--n-"+(n.color||"plain")+")";
@@ -1140,7 +1178,7 @@ function fillNote(card,n){
   pin.innerHTML=n.pinned?PIN:PIN_O;
   const id=card.dataset.id;
   pin.addEventListener("click",e=>{e.stopPropagation();const v=items[id];if(!v)return;put(id,{...v,pinned:!v.pinned,order:topOrder(!v.pinned)})});
-  card.replaceChildren(...[n.title?el("h3",{},n.title):null,n.text?el("p",{},n.text):null,pf?el("span",{class:"ntag"},pf.it.name):null,el("time",{},rel(n.updated||n.created)),pin].filter(Boolean));
+  card.replaceChildren(...[n.title?el("h3",{},n.title):null,n.text?el("p",{},n.text):null,pf?el("span",{class:"ntag"},pf.it.name):null,el("time",{},n.fav?html("span",{class:"nfav",title:"Favorit"},I_STAR_F):null,rel(n.updated||n.created)),pin].filter(Boolean));
 }
 function colCount(){
   const w=$("notes-sec").clientWidth;
@@ -1282,6 +1320,7 @@ function linkTile(k,v){
   const eb=el("button",{class:"e",type:"button","aria-label":"Ändra "+v.name,title:"Ändra",onclick:e=>{e.preventDefault();e.stopPropagation();openLinkForm(k)}});
   eb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
   a.prepend(eb);
+  a.append(favBtn(!!v.fav,v.name,on=>favLink(k,on),"f"));
   a.addEventListener("click",e=>{if(linkEdit||Date.now()<lkClickBlock)e.preventDefault()});
   a.setAttribute("draggable","false");
   a.addEventListener("dragstart",e=>e.preventDefault());   // annars tar webbläsarens egen länk-dragning över
@@ -1533,6 +1572,66 @@ function iconFor(it,cls){
 }
 function monoFor(name,cls){return el("span",{class:"mono "+(cls||""),style:"background:"+MONO[(name.charCodeAt(0)+name.length)%MONO.length]},(name.trim()[0]||"?").toUpperCase())}
 
+
+
+// ---------- Favoriter (stjärnmärkta saker visas i vänstermenyn) ----------
+// Sparas som fältet "fav" (tidpunkt) på anteckningen, länken, projektet eller att-göra-listan i data.json.
+function withFav(v,on){const n={...v};if(on)n.fav=Date.now();else delete n.fav;return n}
+function favBtn(on,label,toggle,cls){
+  const b=html("button",{class:(cls||"ibtn big")+" fav-btn",type:"button","aria-pressed":String(!!on),
+    "aria-label":(on?"Ta bort ":"Lägg till ")+label+(on?" från Favoriter":" i Favoriter"),title:on?"Ta bort från Favoriter":"Lägg till i Favoriter",
+    onclick:e=>{e.preventDefault();e.stopPropagation();toggle(!on)}},on?I_STAR_F:I_STAR);
+  return b;
+}
+function favNote(id,on){const v=items[id];if(!v)return;put(id,withFav(v,on));toast(on?"Tillagd i Favoriter":"Borttagen från Favoriter")}
+function favLink(id,on){const v=items[id];if(!v)return;put(id,withFav(v,on));toast(on?"Tillagd i Favoriter":"Borttagen från Favoriter")}
+function favProj(sid,iid,on){saveItem(sid,iid,x=>withFav(x,on));toast(on?"Tillagd i Favoriter":"Borttagen från Favoriter")}
+function favTodo(sid,iid,lid,on){saveItem(sid,iid,x=>({...x,todos:(x.todos||[]).map(y=>y.id===lid?withFav(y,on):y)}));toast(on?"Tillagd i Favoriter":"Borttagen från Favoriter")}
+function favList(){
+  const out=[];
+  for(const [id,v] of Object.entries(items)){
+    if(!v.fav)continue;
+    if(v.kind==="link")out.push({key:"l"+id,t:v.fav,label:v.name,tip:"Länk",icon:()=>withFavicon(monoFor(v.name,"fs"),v.url),
+      open:()=>window.open(v.url,"_blank","noopener"),href:v.url,off:()=>favLink(id,false)});
+    else if(v.kind==="note"){
+      const first=(v.title||(v.text||"").split("\n")[0]||"Anteckning").trim();
+      out.push({key:"n"+id,t:v.fav,label:first,tip:"Anteckning",icon:()=>html("span",{class:"fs-note",style:"background:var(--n-"+(v.color||"plain")+")"},I_NOTE),
+        open:()=>openNote(id),off:()=>favNote(id,false)});
+    }
+  }
+  for(const [sid,sec] of sectionList())for(const it of (sec.items||[])){
+    if(it.fav)out.push({key:"p"+it.id,t:it.fav,label:it.name,tip:"Projekt",icon:()=>iconFor(it,"fs"),open:()=>go("proj-"+it.id),href:"#proj-"+it.id,cur:route==="proj-"+it.id,off:()=>favProj(sid,it.id,false)});
+    for(const L of (it.todos||[]))if(L.fav)out.push({key:"t"+L.id,t:L.fav,label:L.title,sub:it.name,tip:"Att göra-lista i "+it.name,icon:()=>html("span",{class:"fs-note"},I_LIST),
+      open:()=>{pjCollapsed.delete(L.id);if(route==="proj-"+it.id)renderProject(true);else go("proj-"+it.id);setTimeout(()=>{const c=$("todo-"+L.id);if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1600)}},120)},
+      href:"#proj-"+it.id,off:()=>favTodo(sid,it.id,L.id,false)});
+  }
+  return out.sort((a,b)=>a.t-b.t);
+}
+function favSide(collapsed){
+  const list=favList(),kids=[];
+  kids.push(el("div",{class:"s-div fav-div"}));
+  kids.push(el("div",{class:"grp"},html("h2",{class:"label grp-title fav-title"},I_STAR_F,"Favoriter")));
+  if(!list.length){
+    if(!collapsed)kids.push(el("p",{class:"fav-empty"},"Tryck på stjärnan på en länk, anteckning, ett projekt eller en att göra-lista så hamnar den här."));
+    return kids;
+  }
+  const box=el("div",{class:"fav-list"});
+  list.forEach(f=>{
+    const a=el("a",{class:"s-item f-item",href:f.href||"#","data-tip":f.label,title:f.tip+": "+f.label});
+    if(f.href&&/^https?:/.test(f.href)){a.target="_blank";a.rel="noopener"}
+    if(f.cur)a.setAttribute("aria-current","page");
+    a.append(f.icon(),el("span",{class:"lbl"},f.label,f.sub?el("small",{}," · "+f.sub):null));
+    a.addEventListener("click",e=>{
+      if(a.target==="_blank"){closeMenu();return}   // länken öppnas i ny flik av webbläsaren
+      e.preventDefault();closeMenu();f.open();
+    });
+    const x=html("button",{class:"f-off",type:"button","aria-label":"Ta bort ”"+f.label+"” från Favoriter",title:"Ta bort från Favoriter",onclick:e=>{e.preventDefault();e.stopPropagation();f.off()}},I_X);
+    box.append(el("div",{class:"f-row"},a,collapsed?null:x));
+  });
+  kids.push(box);
+  return kids;
+}
+
 // --- Navigering (adressen får #sektions-id så att bakåtknappen fungerar) ---
 function go(id){
   if(id){if(route!==id)location.hash=encodeURIComponent(id);else onRoute()}
@@ -1565,6 +1664,10 @@ const I_GEAR=SVG('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0
 const I_EXT=SVG('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>');
 const I_PEN=SVG('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>');
 const I_COPY=SVG('<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>');
+const I_STAR=SVG('<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>');
+const I_STAR_F='<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+const I_NOTE=SVG('<path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5M8 9h8M8 12.5h5"/>');
+const I_LIST=SVG('<path d="M10 7h10M10 12h10M10 17h10"/><path d="M4 7l1.2 1.2L7.5 6M4 12l1.2 1.2L7.5 11M4 17l1.2 1.2L7.5 16"/>');
 function html(tag,attrs,svg,...kids){const e=el(tag,attrs);if(svg)e.insertAdjacentHTML("beforeend",svg);for(const k of kids)if(k!=null)e.append(k);return e}
 function isMobile(){return !deskMQ.matches}
 function openMenu(){document.body.classList.add("menu-open");$("menu-scrim").hidden=false;$("open-menu").setAttribute("aria-expanded","true");renderSide();setTimeout(()=>{const t=$("side").querySelector(".s-toggle");if(t)t.focus()},60)}
@@ -1611,19 +1714,8 @@ function renderSide(){
     kids.push(f);setTimeout(()=>t.focus(),30);
   }else kids.push(html("button",{class:"s-item muted",type:"button","data-tip":"Ny sektion",onclick:()=>{if(collapsed){sideCollapsed=false;lsSet(K_SIDE,null)}menuNewSec=true;hideTip();renderSide()}},I_PLUS,el("span",{class:"lbl"},"Ny sektion")));
 
+  kids.push(...favSide(collapsed));
   kids.push(el("div",{class:"s-spacer"}));
-  const ps=projSection();
-  if(ps){
-    const [psid,psec]=ps;
-    kids.push(el("div",{class:"grp"},el("h2",{class:"label grp-title"},psec.title||"Projekt"),
-      html("button",{class:"s-mini",type:"button","aria-label":"Lägg till projekt","data-tip":"Lägg till projekt",onclick:()=>{closeMenu();nextSecAdd=true;go(psid);focusForm()}},I_PLUS)));
-    (psec.items||[]).forEach(it=>{
-      const on=!!(panelItem&&panelItem.iid===it.id);
-      const here=route==="proj-"+it.id;
-      kids.push(html("a",{class:"s-item p-item",href:"#proj-"+it.id,"data-tip":it.name,"aria-current":here?"page":"false",onclick:e=>{e.preventDefault();closeMenu();go("proj-"+it.id)}},null,
-        el("span",{class:"pdot",style:"background:"+dotColor(it.name)}),el("span",{class:"lbl"},it.name),html("span",{class:"chev-wrap","aria-hidden":"true",style:"display:contents"},I_CHEV)));
-    });
-  }
   kids.push(el("div",{class:"s-div"}));
   kids.push(html("button",{class:"s-item s-set",type:"button",id:"side-set","data-tip":"Inställningar",onclick:()=>{closeMenu();openSettings()}},I_GEAR,el("span",{class:"lbl"},"Inställningar"),el("i",{class:"dot "+(lastStatus.kind||"")}),el("span",{class:"sr st"},lastStatus.text||"")));
   side.replaceChildren(...kids);
@@ -1837,6 +1929,7 @@ function renderProject(force){
   const btns=el("div",{class:"pj-btns"});
   if(link)btns.append(html("a",{class:"ibtn primary big",href:link,target:"_blank",rel:"noopener",title:"Öppna sidan","aria-label":"Öppna sidan"},I_EXT));
   if(repo)btns.append(html("a",{class:"ibtn big",href:"https://github.com/"+repo,target:"_blank",rel:"noopener",title:"Repot på GitHub","aria-label":"Repot på GitHub"},ICO_CODE));
+  btns.append(favBtn(!!it.fav,it.name,on=>favProj(sid,it.id,on)));
   btns.append(html("button",{class:"ibtn big",type:"button",title:"Ändra projektet","aria-label":"Ändra projektet","aria-pressed":String(secAdd===it.id),onclick:()=>{secAdd=secAdd===it.id?false:it.id;renderProject(true);if(secAdd)focusForm()}},I_PEN));
   const big=iconFor(it,"xl");
   kids.push(el("header",{class:"pj-top"},big,el("div",{class:"pj-title"},el("h2",{class:"page-title"},it.name),link?el("a",{href:link,target:"_blank",rel:"noopener"},link.replace(/^https?:\/\//,"").replace(/\/$/,"")):repo?el("a",{href:"https://github.com/"+repo,target:"_blank",rel:"noopener"},"github.com/"+repo):null,(it.tags||[]).length?el("span",{class:"tags"},...tagChips(it.tags,t=>{nextTagFilter=t;go(sid)})):null),btns));
@@ -1875,7 +1968,7 @@ function renderProject(force){
   todos.forEach(L=>{
     const done=L.items.filter(x=>x.done).length,started=L.items.filter(x=>!x.done&&x.started).length,tot=L.items.length,coll=pjCollapsed.has(L.id),ren=!!pjEdit["t"+L.id];
     const upd=fn=>saveItem(sid,it.id,x=>({...x,todos:(x.todos||[]).map(y=>y.id===L.id?fn({...y,items:[...y.items]}):y)}));
-    const card=el("div",{class:"todo"+(coll?" coll":"")});
+    const card=el("div",{class:"todo"+(coll?" coll":""),id:"todo-"+L.id});
     let title;
     if(ren){
       title=el("input",{class:"tt-in",id:"tt-"+L.id,value:L.title,"aria-label":"Listans namn"});
@@ -1886,6 +1979,7 @@ function renderProject(force){
     card.append(el("div",{class:"todo-h"},
       html("button",{class:"todo-fold",type:"button","aria-expanded":String(!coll),"aria-label":(coll?"Visa ":"Dölj ")+L.title,onclick:()=>{coll?pjCollapsed.delete(L.id):pjCollapsed.add(L.id);renderProject(true)}},I_DOWN),
       title,el("span",{class:"todo-n"},done+" av "+tot+" klara"+(started?" · "+started+" påbörjad"+(started>1?"e":""):"")),
+      favBtn(!!L.fav,"listan ”"+L.title+"”",on=>{favTodo(sid,it.id,L.id,on);renderProject(true)},"s-mini"),
       toolBtn("Byt namn på listan",I_PEN,()=>{pjEdit["t"+L.id]=true;renderProject(true);setTimeout(()=>{const t=$("tt-"+L.id);if(t){t.focus();t.select()}},30)}),
       toolBtn("Ta bort listan",I_TRASH,()=>{
         const before=(getSection(sid).items.find(x=>x.id===it.id).todos||[]);
@@ -2612,16 +2706,27 @@ function openNote(id){
   $("d-title").value=n.title||""; $("d-text").value=n.text||"";
   $("dlg").style.background="var(--n-"+dColor+")";
   swatches($("d-sw"),()=>dColor,c=>{dColor=c;$("dlg").style.background="var(--n-"+c+")"});
+  setDFav();
   $("note-scrim").hidden=false;
   if(!matchMedia("(pointer:coarse)").matches)$("d-text").focus();
 }
+function setDFav(){
+  const b=$("d-fav"),n=editing&&items[editing],on=!!(n&&n.fav);
+  b.hidden=!n;b.innerHTML=on?I_STAR_F:I_STAR;b.setAttribute("aria-pressed",String(on));
+  const t=on?"Ta bort från Favoriter":"Lägg till i Favoriter";b.title=t;b.setAttribute("aria-label",t);
+}
+$("d-fav").onclick=()=>{const id=editing,n=items[id];if(!n)return;
+  // spara ev. ändrad text samtidigt så att inget försvinner
+  const title=$("d-title").value.trim(),text=$("d-text").value.trim();
+  put(id,withFav({...n,title:title||n.title,text:text||n.text,color:dColor},!n.fav));setDFav();
+  toast(items[id].fav?"Tillagd i Favoriter":"Borttagen från Favoriter")};
 let draftProject=null;
 function newNoteFor(pid){
   editing="__new";draftProject=pid;dColor="plain";
   $("d-title").value="";$("d-text").value="";
   $("dlg").style.background="var(--n-plain)";
   swatches($("d-sw"),()=>dColor,c=>{dColor=c;$("dlg").style.background="var(--n-"+c+")"});
-  $("note-scrim").hidden=false;$("d-title").focus();
+  setDFav();$("note-scrim").hidden=false;$("d-title").focus();
 }
 function closeNote(){
   if(!editing)return;
